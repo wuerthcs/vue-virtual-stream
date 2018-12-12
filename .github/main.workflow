@@ -19,6 +19,6 @@ action "Install Build" {
 
 action "Publish Demo" {
   uses = "actions/npm@6309cd9"
-  needs = ["Install Packages for Build", "Install Packages"]
+  needs = ["Install Build", "Install Packages"]
   runs = "npm run publish-demo"
 }
