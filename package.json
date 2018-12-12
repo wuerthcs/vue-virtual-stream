@@ -17,7 +17,7 @@
     "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-virtual-stream.min.js",
     "dev": "rollup --config build/rollup.config.js --format umd --file dist/vue-virtual-stream.umd.js --watch",
     "publish-demo": "cd ./demo && npm run build && gh-pages -d ./dist",
-    "full-publish": "npm run install-all && npm run publish-demo"
+    "full-publish": "npm run install-all && npm run build && npm run publish-demo"
   },
   "repository": {
     "type": "git",
