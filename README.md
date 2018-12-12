@@ -67,7 +67,7 @@ We also offer **esm**, **unpkg** and **umd** versions. You can find all differen
 </script>
 ```
 
-## Options (Props)
+## Options
 
 ### items
 `items` needs to be an array of items to iterate through. You can use the `<template>` tag to customize rendering of items from outside of the component.
