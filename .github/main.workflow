@@ -13,9 +13,7 @@ action "Install Packages" {
 }
 
 action "Install Build" {
-  uses = "actions/npm@6309cd9"
-  runs = "cd ./demo && npm install"
-}
+  needs = ["Install Packages"]
 
 action "Publish Demo" {
   uses = "actions/npm@6309cd9"
