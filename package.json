@@ -1,0 +1,45 @@
+{
+  "name": "@zip-software/vue-virtual-stream",
+  "version": "0.0.1",
+  "description": "A virtualized list view for chats, comment lists and streams in general.",
+  "main": "dist/vue-virtual-stream.umd.js",
+  "module": "dist/vue-virtual-stream.esm.js",
+  "unpkg": "dist/vue-virtual-stream.min.js",
+  "browser": {
+    "./sfc": "src/components/VirtualStream.vue"
+  },
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "npm run build:umd && npm run build:es && npm run build:unpkg",
+    "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-virtual-stream.umd.js",
+    "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-virtual-stream.esm.js",
+    "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-virtual-stream.min.js",
+    "dev": "rollup --config build/rollup.config.js --format umd --file dist/vue-virtual-stream.umd.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZIP-Software/vue-virtual-stream.git"
+  },
+  "keywords": [
+    "vue",
+    "virtual",
+    "virtualized",
+    "list",
+    "chat",
+    "stream",
+    "comments"
+  ],
+  "author": "Dominik Biedebach, ZIP Software",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ZIP-Software/vue-virtual-stream/issues"
+  },
+  "homepage": "https://github.com/ZIP-Software/vue-virtual-stream#readme",
+  "devDependencies": {
+    "rollup": "^0.67.4",
+    "rollup-plugin-buble": "^0.19.6",
+    "rollup-plugin-vue": "^4.3.2",
+    "vue": "^2.5.21",
+    "vue-template-compiler": "^2.5.21"
+  }
+}
