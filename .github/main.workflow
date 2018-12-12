@@ -1,6 +1,9 @@
 workflow "Publish new Demo" {
   on = "push"
-  resolves = ["Install Packages", "npm run publish-demo"]
+  resolves = [
+    "Install Packages",
+    "Publish Demo",
+  ]
 }
 
 action "Install Packages" {
@@ -8,7 +11,8 @@ action "Install Packages" {
   runs = "npm install"
 }
 
-action "npm run publish-demo" {
+action "Publish Demo" {
   uses = "actions/npm@6309cd9"
   needs = ["Install Packages"]
+  runs = "npm run publish-demo"
 }
