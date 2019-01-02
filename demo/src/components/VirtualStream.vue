@@ -141,7 +141,14 @@
         const offsetter = this.getOffsetter()
         const offset = (this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0
         const scrollPos = (browser === 'safari') ? ((offset + offsetter) - wrapperHeight) * -1 : offset + offsetter
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
         this.$refs.wrapper.scrollTop = scrollPos
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+        window.requestAnimationFrame(() => {
+          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+          this.$refs.wrapper.scrollTop = scrollPos
+          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+        })
       },
       correctBottomScrollPosition() {
         const wrapperHeight = this.$refs.wrapper.offsetHeight
@@ -150,7 +157,14 @@
           ((this.$refs.itemsPrev) ? this.$refs.itemsPrev.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight :
           ((this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight
         const scrollPos = (browser === 'safari') ? (offset - offsetter) * -1 : offset - offsetter
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
         this.$refs.wrapper.scrollTop = scrollPos
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+        window.requestAnimationFrame(() => {
+          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+          this.$refs.wrapper.scrollTop = scrollPos
+          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+        })
       },
       getOffsetter(el) {
         const curr = (this.$refs.itemsCurrent.offsetHeight * (this.preloadOffset / 100))

@@ -44,8 +44,8 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(500),
-      itemsPerChunk: 8,
+      items: this.generateMessages(1200),
+      itemsPerChunk: 24,
       debug: false,
       stream: false,
     }
