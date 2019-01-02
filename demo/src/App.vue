@@ -1,8 +1,8 @@
 <template>
-  <div class="app" id="app">
+  <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :items-per-chunk="8" :preloadOffset="50">
+        <virtual-stream :items="items" reversed :items-per-chunk="itemsPerChunk" :preloadOffset="80" ref="stream">
           <template slot-scope="{ item, index }">
             <div class="item">
               <div class="message">{{ item.message }}</div>
@@ -10,14 +10,32 @@
           </template>
         </virtual-stream>
       </div>
-      <button v-on:click="addMessage">Add message</button>
+      <div class="toolbar">
+        <div>
+          <button v-on:click="addMessage">Add message</button>
+          <div>
+            <label>
+              Items per Chunk
+              <input type="number" :value="itemsPerChunk" v-on:change="updateItemsPerChunk" min="8" max="100" />
+            </label>
+          </div>
+        </div>
+        <label>
+          Enable debugging view
+          <input type="checkbox" :checked="debug" v-on:click="toggleDebug" />
+        </label>
+        <div v-if="debug">
+          Current Chunk: {{ stream.currentChunk }}<br />
+          Chunk Count: {{ stream.chunkCount }}<br />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import LoremIpsum from 'lorem-ipsum'
-import VirtualStream from '../../dist/vue-virtual-stream.esm'
+import VirtualStream from './components/VirtualStream'
 
 export default {
   name: 'App',
@@ -26,7 +44,10 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(80)
+      items: this.generateMessages(500),
+      itemsPerChunk: 8,
+      debug: false,
+      stream: false,
     }
   },
   methods: {
@@ -48,7 +69,16 @@ export default {
     },
     addMessage() {
       this.items.splice(0, 0, this.generateMessage(this.items.length))
+    },
+    toggleDebug() {
+      this.debug = !this.debug
+    },
+    updateItemsPerChunk(e) {
+      this.itemsPerChunk = Number(e.currentTarget.value)
     }
+  },
+  mounted() {
+    this.stream = this.$refs.stream
   }
 }
 </script>
@@ -84,6 +114,43 @@ body {
   height: 100%;
 }
 
+.app >>> .VirtualStream__Items {
+  position: relative;
+}
+
+.app.app--isDebugging >>> .VirtualStream__Items--isPrev:before,
+.app.app--isDebugging >>> .VirtualStream__Items--isNext:before {
+  background: #ff0000;
+  bottom: 0;
+  content: '';
+  display: block;
+  height: 32px;
+  top: 0;
+  width: 100%;
+  position: absolute;
+  margin: auto;
+}
+
+.app >>> .VirtualStream__Items--isPrev:before {
+  transform: translateY(32px);
+}
+
+.app >>> .VirtualStream__Items--isNext:before {
+  transform: traslateY(-32px);
+}
+
+.app.app--isDebugging >>> .VirtualStream__Items--isPrev {
+  background: #ccfccc;
+}
+
+.app.app--isDebugging >>> .VirtualStream__Items--isCurrent {
+  background: #fccccc;
+}
+
+.app.app--isDebugging >>> .VirtualStream__Items--isNext {
+  background: #ccccfc;
+}
+
 .item {
   font-size: 16px;
   line-height: 1.75em;
@@ -102,9 +169,12 @@ body {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 40px 240px rgba(0, 0, 0, .35);
+  display: flex;
+  flex-direction: column;
   flex: 1 1 100%;
   margin: 60px auto;
   max-width: 800px;
+  overflow: hidden;
   padding: 30px;
   width: 90%;
 }
@@ -112,5 +182,12 @@ body {
 .container-inner {
   height: 100%;
   position: relative;
+}
+
+.toolbar {
+  display: grid;
+  padding: 16px 0;
+  grid-template-columns: repeat(3, minmax(100px, 1fr));
+  grid-gap: 16px;
 }
 </style>
