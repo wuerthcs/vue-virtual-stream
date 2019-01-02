@@ -179,6 +179,14 @@ body {
   width: 90%;
 }
 
+@media screen and (max-width: 500px) {
+  .container {
+    padding: 8px;
+    width: 98%;
+    margin: 12px;
+  }
+}
+
 .container-inner {
   height: 100%;
   position: relative;

@@ -29,6 +29,7 @@
 <script>
   import getBrowser from '../utils/getBrowser'
   const browser = getBrowser()
+  let locked = false
 
   export default {
     name: 'VirtualStream',
@@ -84,24 +85,38 @@
     },
     methods: {
       handleScroll() {
-        const scrollTop = (browser === 'safari') ?
-          (this.$refs.wrapper.scrollTop + this.$refs.wrapper.scrollHeight - this.$refs.wrapper.offsetHeight) :
-          this.$refs.wrapper.scrollTop
-        const prevScrollOffset = this.getPrevScrollOffset(scrollTop)
-        const nextScrollOffset = this.getNextScrollOffset(scrollTop)
-
-        if (prevScrollOffset && prevScrollOffset > this.preloadOffset) {
-          this.currentChunk--
-          window.requestAnimationFrame(() => {
-            this.correctScrollPosition(false)
-          })
-        }
-
-        if (nextScrollOffset && nextScrollOffset > this.preloadOffset) {
-          this.currentChunk++
-          window.requestAnimationFrame(() => {
-            this.correctScrollPosition(true)
-          })
+        if (!locked) {
+          const scrollTop = (browser === 'safari') ?
+            (this.$refs.wrapper.scrollTop + this.$refs.wrapper.scrollHeight - this.$refs.wrapper.offsetHeight) :
+            this.$refs.wrapper.scrollTop
+          const prevScrollOffset = this.getPrevScrollOffset(scrollTop)
+          const nextScrollOffset = this.getNextScrollOffset(scrollTop)
+  
+          if (prevScrollOffset && prevScrollOffset > this.preloadOffset) {
+            locked = true
+            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+            window.requestAnimationFrame(() => {
+              this.currentChunk--
+              this.correctScrollPosition(false)
+              window.setTimeout(() => {
+                locked = false
+                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+              }, 100)
+            })
+          }
+  
+          if (nextScrollOffset && nextScrollOffset > this.preloadOffset) {
+            locked = true
+            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+            window.requestAnimationFrame(() => {
+              this.currentChunk++
+              this.correctScrollPosition(true)
+              window.setTimeout(() => {
+                locked = false
+                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+              }, 100)
+            })
+          }
         }
       },
       getPrevScrollOffset(scrollTop) {
@@ -141,14 +156,7 @@
         const offsetter = this.getOffsetter()
         const offset = (this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0
         const scrollPos = (browser === 'safari') ? ((offset + offsetter) - wrapperHeight) * -1 : offset + offsetter
-        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
         this.$refs.wrapper.scrollTop = scrollPos
-        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-        window.requestAnimationFrame(() => {
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-          this.$refs.wrapper.scrollTop = scrollPos
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-        })
       },
       correctBottomScrollPosition() {
         const wrapperHeight = this.$refs.wrapper.offsetHeight
@@ -157,14 +165,7 @@
           ((this.$refs.itemsPrev) ? this.$refs.itemsPrev.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight :
           ((this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight
         const scrollPos = (browser === 'safari') ? (offset - offsetter) * -1 : offset - offsetter
-        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
         this.$refs.wrapper.scrollTop = scrollPos
-        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-        window.requestAnimationFrame(() => {
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-          this.$refs.wrapper.scrollTop = scrollPos
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-        })
       },
       getOffsetter(el) {
         const curr = (this.$refs.itemsCurrent.offsetHeight * (this.preloadOffset / 100))
@@ -181,6 +182,7 @@
     overflow: auto;
     position: absolute;
     top: 0;
+    transform: translate3d(0,0,0);
     width: 100%;
   }
 
@@ -190,6 +192,7 @@
     flex-direction: column;
     height: 100%;
     overflow: auto;
+    transform: translate3d(0,0,0);
     width: 100%;
   }
 
@@ -201,6 +204,7 @@
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
+    transform: translate3d(0,0,0);
   }
 
   .VirtualStream__Wrapper--isReversed .VirtualStream__Items {
