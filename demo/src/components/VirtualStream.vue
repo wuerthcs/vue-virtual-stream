@@ -171,6 +171,7 @@
   }
 
   .VirtualStream__Wrapper {
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
     height: 100%;
