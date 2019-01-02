@@ -60,7 +60,7 @@ We also offer **esm**, **unpkg** and **umd** versions. You can find all differen
 
     export default {
         components: {
-            VueVirtualStream,
+            VirtualStream,
         },
         ...
     }
