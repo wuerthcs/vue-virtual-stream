@@ -27,7 +27,7 @@
 </template>
 
 <script>
-  import getBrowser from '@/utils/getBrowser'
+  import getBrowser from '../utils/getBrowser'
   const browser = getBrowser()
 
   export default {
@@ -149,7 +149,7 @@
         const offset = (browser === 'safari') ? 
           ((this.$refs.itemsPrev) ? this.$refs.itemsPrev.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight :
           ((this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight
-        const scrollPos = (browser === 'safari') ? (offset - offsetter) * -1 : offset - wrapperHeight + offsetter
+        const scrollPos = (browser === 'safari') ? (offset - offsetter) * -1 : offset - offsetter
         this.$refs.wrapper.scrollTop = scrollPos
       },
       getOffsetter(el) {
