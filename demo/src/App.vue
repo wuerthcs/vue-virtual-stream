@@ -2,10 +2,13 @@
   <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :items-per-chunk="itemsPerChunk" :preloadOffset="80" ref="stream">
+        <virtual-stream :items="items" :items-per-chunk="itemsPerChunk" :preload="5" :offset="80" ref="stream">
           <template slot-scope="{ item, index }">
             <div class="item">
-              <div class="message">{{ item.message }}</div>
+              <div class="message">
+                <strong>{{ item.id }}</strong><br />
+                {{ item.message }}
+              </div>
             </div>
           </template>
         </virtual-stream>
@@ -44,8 +47,8 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(1200),
-      itemsPerChunk: 24,
+      items: this.generateMessages(1600),
+      itemsPerChunk: 80,
       debug: false,
       stream: false,
     }
@@ -56,7 +59,7 @@ export default {
       for (let i = 0; i < num; i++) {
         messages.push(this.generateMessage(i))
       }
-      return messages.reverse()
+      return messages
     },
     generateMessage(id) {
       return {
@@ -68,7 +71,7 @@ export default {
       }
     },
     addMessage() {
-      this.items.splice(0, 0, this.generateMessage(this.items.length))
+      this.items.push(this.generateMessage(this.items.length))
     },
     toggleDebug() {
       this.debug = !this.debug
@@ -154,7 +157,6 @@ body {
 .item {
   font-size: 16px;
   line-height: 1.75em;
-  margin: 32px 0;
   max-width: 80%;
   padding: 8px 12px;
   background: #f3f3f3;

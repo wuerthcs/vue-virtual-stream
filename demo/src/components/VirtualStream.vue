@@ -1,38 +1,29 @@
 <template>
   <div class="VirtualStream__Scroller" ref="container">
-    <div class="VirtualStream__Wrapper" :class="{ 'VirtualStream__Wrapper--isReversed': reversed }" ref="wrapper" @scroll="handleScroll">
-      <div class="VirtualStream__Items VirtualStream__Items--isPrev" ref="itemsPrev" v-if="chunkItems[currentChunk - 1]">
+    <div class="VirtualStream__Wrapper" ref="wrapper" @scroll="handleScroll">
+      <Chunk v-for="(chunk, key) in loadedChunks" :key="key" :items="chunk">
         <slot
-          v-for="(item, index) in chunkItems[currentChunk - 1]"
+          v-for="(item, index) in chunk"
           :item="item"
           :index="index"
         />
-      </div>
-      <div class="VirtualStream__Items VirtualStream__Items--isCurrent" ref="itemsCurrent">
-        <slot
-          v-for="(item, index) in chunkItems[currentChunk]"
-          :item="item"
-          :index="index"
-        />
-      </div>
-      <div class="VirtualStream__Items VirtualStream__Items--isNext" ref="itemsNext" v-if="chunkItems[currentChunk + 1]">
-        <slot
-          v-for="(item, index) in chunkItems[currentChunk + 1]"
-          :item="item"
-          :index="index"
-        />
-      </div>
+      </Chunk>
     </div>
   </div>
 </template>
 
 <script>
   import getBrowser from '../utils/getBrowser'
+  import Chunk from './Chunk'
+
   const browser = getBrowser()
   let locked = false
 
   export default {
     name: 'VirtualStream',
+    components: {
+      Chunk,
+    },
     props: {
       items: {
         type: Array,
@@ -46,18 +37,19 @@
         type: Number,
         default: 50,
       },
-      maxChunkPreload: {
+      preload: {
         type: Number,
-        default: 1,
+        default: 25,
       },
-      preloadOffset: {
+      offset: {
         type: Number,
-        default: 50
+        default: 30
       },
     },
     data() {
       return {
         currentChunk: 0,
+        maxChunk: 0,
       }
     },
     computed: {
@@ -68,7 +60,11 @@
 
         for (let i = 0; i < this.items.length; i++) {
           if (!chunks[chunkIndex]) { chunks[chunkIndex] = [] }
-          chunks[chunkIndex].push(this.items[i])
+          if (this.reversed) {
+            chunks[chunkIndex].push(this.items[i])
+          } else {
+            chunks[chunkIndex].unshift(this.items[i])
+          }
           itemIndex++
 
           if (itemIndex >= this.itemsPerChunk) {
@@ -76,101 +72,33 @@
             itemIndex = 0
           }
         }
-
-        return chunks
+        return (this.reversed) ? chunks : [...chunks].reverse()
       },
       chunkCount () {
         return Math.ceil(this.items.length / this.itemsPerChunk) - 1
+      },
+      loadedChunks () {
+        const chunks = []
+        const maxChunk = this.maxChunk + this.preload
+
+        for (let i = 0; i < maxChunk; i++) {
+          if (this.chunkItems[i]) {
+            chunks.push(this.chunkItems[i])
+          }
+        }
+
+        return this.chunkItems
       }
     },
     methods: {
       handleScroll() {
-        if (!locked) {
-          const scrollTop = (browser === 'safari') ?
-            (this.$refs.wrapper.scrollTop + this.$refs.wrapper.scrollHeight - this.$refs.wrapper.offsetHeight) :
-            this.$refs.wrapper.scrollTop
-          const prevScrollOffset = this.getPrevScrollOffset(scrollTop)
-          const nextScrollOffset = this.getNextScrollOffset(scrollTop)
-  
-          if (prevScrollOffset && prevScrollOffset > this.preloadOffset) {
-            locked = true
-            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-            window.requestAnimationFrame(() => {
-              this.currentChunk--
-              this.correctScrollPosition(false)
-              window.setTimeout(() => {
-                locked = false
-                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-              }, 100)
-            })
-          }
-  
-          if (nextScrollOffset && nextScrollOffset > this.preloadOffset) {
-            locked = true
-            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-            window.requestAnimationFrame(() => {
-              this.currentChunk++
-              this.correctScrollPosition(true)
-              window.setTimeout(() => {
-                locked = false
-                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-              }, 100)
-            })
-          }
-        }
-      },
-      getPrevScrollOffset(scrollTop) {
-        if (this.$refs.itemsPrev) {
-          const offset = this.$refs.itemsCurrent.offsetHeight + ((this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0)
-          const height = this.$refs.itemsPrev.offsetHeight
-          const scrollBottom = (scrollTop + this.$refs.wrapper.offsetHeight) - offset
-
-          if (scrollBottom >= 0) {
-            return (scrollBottom / height) * 100
-          }
-          return 0
-        }
-
-        return false
-      },
-      getNextScrollOffset(scrollTop) {
-        if (this.$refs.itemsNext) {
-          const height = this.$refs.itemsNext.offsetHeight
-          if (scrollTop <= height) {
-            return 100 - ((scrollTop / height) * 100)
-          }
-          return 0
-        }
-
-        return false
-      },
-      correctScrollPosition(wasNext) {
-        if (wasNext) {
-          this.correctTopScrollPosition()
-        } else {
-          this.correctBottomScrollPosition()
-        }
-      },
-      correctTopScrollPosition() {
-        const wrapperHeight = this.$refs.wrapper.offsetHeight
-        const offsetter = this.getOffsetter()
-        const offset = (this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0
-        const scrollPos = (browser === 'safari') ? ((offset + offsetter) - wrapperHeight) * -1 : offset + offsetter
-        this.$refs.wrapper.scrollTop = scrollPos
-      },
-      correctBottomScrollPosition() {
-        const wrapperHeight = this.$refs.wrapper.offsetHeight
-        const offsetter = this.getOffsetter()
-        const offset = (browser === 'safari') ? 
-          ((this.$refs.itemsPrev) ? this.$refs.itemsPrev.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight :
-          ((this.$refs.itemsNext) ? this.$refs.itemsNext.offsetHeight : 0) + this.$refs.itemsCurrent.offsetHeight
-        const scrollPos = (browser === 'safari') ? (offset - offsetter) * -1 : offset - offsetter
-        this.$refs.wrapper.scrollTop = scrollPos
-      },
-      getOffsetter(el) {
-        const curr = (this.$refs.itemsCurrent.offsetHeight * (this.preloadOffset / 100))
-        return curr
-      },
+        this.$emit('scroll', this.$refs.wrapper.scrollTop)
+      }
+    },
+    watch: {
+      items(n) {
+        this.$emit('streamItemsUpdated', n)
+      }
     }
   }
 </script>
@@ -188,26 +116,13 @@
 
   .VirtualStream__Wrapper {
     -webkit-overflow-scrolling: touch;
-    display: flex;
-    flex-direction: column;
     height: 100%;
     overflow: auto;
     transform: translate3d(0,0,0);
     width: 100%;
   }
 
-  .VirtualStream__Wrapper--isReversed {
-    flex-direction: column-reverse;
-  }
-
   .VirtualStream__Items {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
     transform: translate3d(0,0,0);
-  }
-
-  .VirtualStream__Wrapper--isReversed .VirtualStream__Items {
-    flex-direction: column-reverse;
   }
 </style>
