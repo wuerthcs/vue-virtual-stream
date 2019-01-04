@@ -2,7 +2,7 @@
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
       <div class="VirtualStream__Track" ref="track">
-        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" @resizeitem="updateItemDimension">
+        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" @resizeitem="updateItemDimension" @setstart="handleStart" @setend="handleEnd">
           <slot
             :item="item"
             :index="index"
@@ -49,20 +49,21 @@
     },
     data() {
       return {
-        currentItem: 0,
+        start: 0,
+        end: 0,
         dimensions: {},
         totalHeight: 0,
       }
     },
     computed: {
       currentView() {
-        return this.items.slice(this.start, this.end)
+        return this.items.slice(this.startIndex, this.endIndex)
       },
-      start() {
-        return ((this.currentItem - this.preload) < 0) ? 0 : this.currentItem - this.preload
+      startIndex() {
+        return ((this.start - this.preload) < 0) ? 0 : this.start - this.preload
       },
-      end() {
-        return ((this.currentItem + this.preload) > this.items.length) ? this.items.length : this.currentItem + this.preload
+      endIndex() {
+        return ((this.end + this.preload) > this.items.length) ? this.items.length : this.end + this.preload
       },
       identifier() {
         let indexes = []
@@ -76,7 +77,18 @@
     },
     methods: {
       handleScroll() {
-        this.$emit('scroll', this.$refs.wrapper.scrollTop)
+        this.$emit('scroll', {
+          start: this.$refs.wrapper.scrollTop,
+          end: this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop,
+        })
+      },
+      handleStart(id) {
+        const newStart = this.identifier.ids[id]
+        this.start = newStart
+      },
+      handleEnd(id) {
+        const newEnd = this.identifier.ids[id]
+        this.end = newEnd
       },
       updateItemDimensions(d) {
         this.$refs.items.forEach((item, i) => {
@@ -85,15 +97,15 @@
             if (previousIndex < 0) return 0
             const previousId = this.identifier.indexes[previousIndex]
             if (!this.dimensions[previousId]) return 0
-            return this.dimensions[previousId].top + this.dimensions[previousId].h
+            return this.dimensions[previousId].top + this.dimensions[previousId].height
           })()
-          this.dimensions[item.id] = { h: item.$el.offsetHeight, w: item.$el.offsetWidth, top }
+          this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, top }
           this.$emit('dimensions', this.dimensions)
         })
 
-        this.totalHeight = Object.values(this.dimensions).reduce((a, b) => {
-          const aVal = (a.h) ? a.h : a
-          const bVal = (b.h) ? b.h : b
+        this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
+          const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
+          const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
           return aVal + bVal
         })
         this.$refs.track.style.height = this.totalHeight + 'px'
@@ -104,7 +116,6 @@
     },
     watch: {
       currentView(n) {
-        this.$emit('streamItemsUpdated', n)
         this.$nextTick(() => {
           this.updateItemDimensions()
         })

@@ -1,5 +1,5 @@
 <template>
-    <div class="VirtualStream__Item" ref="item" :style="styles">
+    <div class="VirtualStream__Item" ref="item" :style="styles" data-id="id">
         <slot />
     </div>
 </template>
@@ -20,6 +20,16 @@ export default {
     mounted() {
         this.$parent.$on('dimensions', (d) => {
             this.dimension = (d[this.id]) ? d[this.id] : null      
+        })
+
+        this.$parent.$on('scroll', (position) => {
+            if ((position.start >= this.dimension.top) && (position.start <= this.dimension.top + this.dimension.height)) {
+                this.$emit('setstart', this.id)
+            }
+
+            if ((position.end >= this.dimension.top) && (position.end <= this.dimension.top + this.dimension.height)) {
+                this.$emit('setend', this.id)
+            }
         })
 
         this.ro = new ResizeObserver(elements => {

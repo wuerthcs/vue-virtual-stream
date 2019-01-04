@@ -8,7 +8,6 @@
               <div class="message">
                 <strong>{{ item.id }}</strong><br />
                 {{ item.message }}<br />
-                {{ index }}
               </div>
             </div>
           </template>
@@ -35,7 +34,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(80),
+      items: this.generateMessages(2000),
     }
   },
   methods: {
@@ -58,7 +57,6 @@ export default {
     addMessage() {
       this.items.push(this.generateMessage(this.items.length))
     },
-    
     updateItemsPerChunk(e) {
       this.itemsPerChunk = Number(e.currentTarget.value)
     }
