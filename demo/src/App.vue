@@ -2,12 +2,13 @@
   <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :items-per-chunk="itemsPerChunk" :preload="5" :offset="80" ref="stream">
+        <virtual-stream :items="items" :preload="10" :offset="80" ref="stream">
           <template slot-scope="{ item, index }">
             <div class="item">
               <div class="message">
                 <strong>{{ item.id }}</strong><br />
-                {{ item.message }}
+                {{ item.message }}<br />
+                {{ index }}
               </div>
             </div>
           </template>
@@ -15,21 +16,7 @@
       </div>
       <div class="toolbar">
         <div>
-          <button v-on:click="addMessage">Add message</button>
-          <div>
-            <label>
-              Items per Chunk
-              <input type="number" :value="itemsPerChunk" v-on:change="updateItemsPerChunk" min="8" max="100" />
-            </label>
-          </div>
-        </div>
-        <label>
-          Enable debugging view
-          <input type="checkbox" :checked="debug" v-on:click="toggleDebug" />
-        </label>
-        <div v-if="debug">
-          Current Chunk: {{ stream.currentChunk }}<br />
-          Chunk Count: {{ stream.chunkCount }}<br />
+          <button v-on:click="addMessage">Add message</button><br />
         </div>
       </div>
     </div>
@@ -39,6 +26,7 @@
 <script>
 import LoremIpsum from 'lorem-ipsum'
 import VirtualStream from './components/VirtualStream'
+import uuid from 'uuid/v4'
 
 export default {
   name: 'App',
@@ -47,10 +35,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(1600),
-      itemsPerChunk: 80,
-      debug: false,
-      stream: false,
+      items: this.generateMessages(80),
     }
   },
   methods: {
@@ -63,7 +48,7 @@ export default {
     },
     generateMessage(id) {
       return {
-        id,
+        id: uuid(),
         message: LoremIpsum({
           sentenceLowerBound: 5,
           sentenceUpperBound: 100,
@@ -73,9 +58,7 @@ export default {
     addMessage() {
       this.items.push(this.generateMessage(this.items.length))
     },
-    toggleDebug() {
-      this.debug = !this.debug
-    },
+    
     updateItemsPerChunk(e) {
       this.itemsPerChunk = Number(e.currentTarget.value)
     }

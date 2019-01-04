@@ -1,20 +1,21 @@
 <template>
   <div class="VirtualStream__Scroller" ref="container">
-    <div class="VirtualStream__Wrapper" ref="wrapper" @scroll="handleScroll">
-      <Chunk v-for="(chunk, key) in loadedChunks" :key="key" :items="chunk">
-        <slot
-          v-for="(item, index) in chunk"
-          :item="item"
-          :index="index"
-        />
-      </Chunk>
+    <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
+      <div class="VirtualStream__Track" ref="track">
+        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" @resizeitem="updateItemDimension">
+          <slot
+            :item="item"
+            :index="index"
+          />
+        </Item>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
   import getBrowser from '../utils/getBrowser'
-  import Chunk from './Chunk'
+  import Item from './Item'
 
   const browser = getBrowser()
   let locked = false
@@ -22,7 +23,7 @@
   export default {
     name: 'VirtualStream',
     components: {
-      Chunk,
+      Item
     },
     props: {
       items: {
@@ -33,9 +34,9 @@
         type: Boolean,
         default: false,
       },
-      itemsPerChunk: {
+      count: {
         type: Number,
-        default: 50,
+        default: 25,
       },
       preload: {
         type: Number,
@@ -43,62 +44,76 @@
       },
       offset: {
         type: Number,
-        default: 30
+        default: 80
       },
     },
     data() {
       return {
-        currentChunk: 0,
-        maxChunk: 0,
+        currentItem: 0,
+        dimensions: {},
+        totalHeight: 0,
       }
     },
     computed: {
-      chunkItems () {
-        let chunkIndex = 0
-        let itemIndex = 0
-        const chunks = []
-
-        for (let i = 0; i < this.items.length; i++) {
-          if (!chunks[chunkIndex]) { chunks[chunkIndex] = [] }
-          if (this.reversed) {
-            chunks[chunkIndex].push(this.items[i])
-          } else {
-            chunks[chunkIndex].unshift(this.items[i])
-          }
-          itemIndex++
-
-          if (itemIndex >= this.itemsPerChunk) {
-            chunkIndex++
-            itemIndex = 0
-          }
-        }
-        return (this.reversed) ? chunks : [...chunks].reverse()
+      currentView() {
+        return this.items.slice(this.start, this.end)
       },
-      chunkCount () {
-        return Math.ceil(this.items.length / this.itemsPerChunk) - 1
+      start() {
+        return ((this.currentItem - this.preload) < 0) ? 0 : this.currentItem - this.preload
       },
-      loadedChunks () {
-        const chunks = []
-        const maxChunk = this.maxChunk + this.preload
-
-        for (let i = 0; i < maxChunk; i++) {
-          if (this.chunkItems[i]) {
-            chunks.push(this.chunkItems[i])
-          }
-        }
-
-        return this.chunkItems
-      }
+      end() {
+        return ((this.currentItem + this.preload) > this.items.length) ? this.items.length : this.currentItem + this.preload
+      },
+      identifier() {
+        let indexes = []
+        let ids = {}
+        this.items.forEach((item, index) => {
+          indexes[index] = item.id
+          ids[item.id] = index
+        })
+        return { indexes, ids }
+      },
     },
     methods: {
       handleScroll() {
         this.$emit('scroll', this.$refs.wrapper.scrollTop)
+      },
+      updateItemDimensions(d) {
+        this.$refs.items.forEach((item, i) => {
+          const top = (() => {
+            const previousIndex = this.identifier.ids[item.id] - 1
+            if (previousIndex < 0) return 0
+            const previousId = this.identifier.indexes[previousIndex]
+            if (!this.dimensions[previousId]) return 0
+            return this.dimensions[previousId].top + this.dimensions[previousId].h
+          })()
+          this.dimensions[item.id] = { h: item.$el.offsetHeight, w: item.$el.offsetWidth, top }
+          this.$emit('dimensions', this.dimensions)
+        })
+
+        this.totalHeight = Object.values(this.dimensions).reduce((a, b) => {
+          const aVal = (a.h) ? a.h : a
+          const bVal = (b.h) ? b.h : b
+          return aVal + bVal
+        })
+        this.$refs.track.style.height = this.totalHeight + 'px'
+      },
+      updateItemDimension(d) {
+        Object.assign(this.dimensions[d.id], d.dimensions)
       }
     },
     watch: {
-      items(n) {
+      currentView(n) {
         this.$emit('streamItemsUpdated', n)
+        this.$nextTick(() => {
+          this.updateItemDimensions()
+        })
       }
+    },
+    mounted() {
+      this.$nextTick(() => {
+        this.updateItemDimensions()
+      })
     }
   }
 </script>
@@ -124,5 +139,10 @@
 
   .VirtualStream__Items {
     transform: translate3d(0,0,0);
+  }
+
+  .VirtualStream__Item {
+    position: absolute;
+    top: 0;
   }
 </style>
