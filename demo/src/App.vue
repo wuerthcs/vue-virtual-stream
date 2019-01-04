@@ -2,31 +2,20 @@
   <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :items-per-chunk="itemsPerChunk" :preloadOffset="80" ref="stream">
+        <virtual-stream :items="items" :preload="10" :offset="80" ref="stream">
           <template slot-scope="{ item, index }">
             <div class="item">
-              <div class="message">{{ item.message }}</div>
+              <div class="message">
+                <strong>{{ item.id }}</strong><br />
+                {{ item.message }}<br />
+              </div>
             </div>
           </template>
         </virtual-stream>
       </div>
       <div class="toolbar">
         <div>
-          <button v-on:click="addMessage">Add message</button>
-          <div>
-            <label>
-              Items per Chunk
-              <input type="number" :value="itemsPerChunk" v-on:change="updateItemsPerChunk" min="8" max="100" />
-            </label>
-          </div>
-        </div>
-        <label>
-          Enable debugging view
-          <input type="checkbox" :checked="debug" v-on:click="toggleDebug" />
-        </label>
-        <div v-if="debug">
-          Current Chunk: {{ stream.currentChunk }}<br />
-          Chunk Count: {{ stream.chunkCount }}<br />
+          <button v-on:click="addMessage">Add message</button><br />
         </div>
       </div>
     </div>
@@ -36,6 +25,7 @@
 <script>
 import LoremIpsum from 'lorem-ipsum'
 import VirtualStream from './components/VirtualStream'
+import uuid from 'uuid/v4'
 
 export default {
   name: 'App',
@@ -44,10 +34,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(500),
-      itemsPerChunk: 8,
-      debug: false,
-      stream: false,
+      items: this.generateMessages(2000),
     }
   },
   methods: {
@@ -56,11 +43,11 @@ export default {
       for (let i = 0; i < num; i++) {
         messages.push(this.generateMessage(i))
       }
-      return messages.reverse()
+      return messages
     },
     generateMessage(id) {
       return {
-        id,
+        id: uuid(),
         message: LoremIpsum({
           sentenceLowerBound: 5,
           sentenceUpperBound: 100,
@@ -68,10 +55,7 @@ export default {
       }
     },
     addMessage() {
-      this.items.splice(0, 0, this.generateMessage(this.items.length))
-    },
-    toggleDebug() {
-      this.debug = !this.debug
+      this.items.push(this.generateMessage(this.items.length))
     },
     updateItemsPerChunk(e) {
       this.itemsPerChunk = Number(e.currentTarget.value)
@@ -154,7 +138,6 @@ body {
 .item {
   font-size: 16px;
   line-height: 1.75em;
-  margin: 32px 0;
   max-width: 80%;
   padding: 8px 12px;
   background: #f3f3f3;
@@ -177,6 +160,14 @@ body {
   overflow: hidden;
   padding: 30px;
   width: 90%;
+}
+
+@media screen and (max-width: 500px) {
+  .container {
+    padding: 8px;
+    width: 98%;
+    margin: 12px;
+  }
 }
 
 .container-inner {
