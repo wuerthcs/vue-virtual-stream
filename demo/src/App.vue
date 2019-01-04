@@ -2,7 +2,7 @@
   <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :preload="30" ref="stream">
+        <virtual-stream :items="items" :preload="16" ref="stream">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>
@@ -158,7 +158,7 @@ body {
   .container {
     border-radius: 0;
     margin: 0;
-    padding: 0;
+    padding: 0 16px;
     width: 100%;
   }
 }
@@ -173,5 +173,13 @@ body {
   padding: 16px 0;
   grid-template-columns: repeat(3, minmax(100px, 1fr));
   grid-gap: 16px;
+}
+</style>
+
+<style>
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
 }
 </style>

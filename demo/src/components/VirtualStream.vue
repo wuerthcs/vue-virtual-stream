@@ -2,7 +2,7 @@
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
       <div class="VirtualStream__Track" ref="track">
-        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" @resizeitem="updateItemDimension" @setstart="handleStart" @setend="handleEnd">
+        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" :index="index" :maxIndex="currentView.length - 1" @resizeitem="updateItemDimension" @setstart="handleStart" @setend="handleEnd">
           <slot
             :item="item"
             :index="index"
@@ -34,17 +34,9 @@
         type: Boolean,
         default: false,
       },
-      count: {
-        type: Number,
-        default: 25,
-      },
       preload: {
         type: Number,
         default: 25,
-      },
-      offset: {
-        type: Number,
-        default: 80
       },
     },
     data() {
@@ -83,10 +75,13 @@
         })
       },
       handleStart(id) {
+        console.log(this.dimensions)
+        console.log('SET START', id)
         const newStart = this.identifier.ids[id]
         this.start = newStart
       },
       handleEnd(id) {
+        console.log('SET END', id)
         const newEnd = this.identifier.ids[id]
         this.end = newEnd
       },
