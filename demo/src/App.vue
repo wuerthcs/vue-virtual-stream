@@ -2,14 +2,9 @@
   <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :preload="10" :offset="80" ref="stream">
-          <template slot-scope="{ item, index }">
-            <div class="item">
-              <div class="message">
-                <strong>{{ item.id }}</strong><br />
-                {{ item.message }}<br />
-              </div>
-            </div>
+        <virtual-stream :items="items" :preload="30" ref="stream">
+          <template slot-scope="{ item }">
+            <Message :data="item" />
           </template>
         </virtual-stream>
       </div>
@@ -24,13 +19,16 @@
 
 <script>
 import LoremIpsum from 'lorem-ipsum'
-import VirtualStream from './components/VirtualStream'
+import faker from 'faker'
 import uuid from 'uuid/v4'
+import VirtualStream from './components/VirtualStream'
+import Message from './components/Message'
 
 export default {
   name: 'App',
   components: {
-    VirtualStream
+    VirtualStream,
+    Message
   },
   data() {
     return {
@@ -46,12 +44,19 @@ export default {
       return messages
     },
     generateMessage(id) {
+      const isRight = (Math.floor((Math.random()) * 10) > 7)
+      const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
+
       return {
         id: uuid(),
+        author: faker.name.findName(),
+        avatar: faker.fake(`{{image.avatar}}`),
         message: LoremIpsum({
           sentenceLowerBound: 5,
-          sentenceUpperBound: 100,
-        })
+          sentenceUpperBound: 30,
+        }),
+        attachment: (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null,
+        isRight,
       }
     },
     addMessage() {
@@ -135,19 +140,6 @@ body {
   background: #ccccfc;
 }
 
-.item {
-  font-size: 16px;
-  line-height: 1.75em;
-  max-width: 80%;
-  padding: 8px 12px;
-  background: #f3f3f3;
-  border-radius: 12px;
-}
-
-.item:nth-child(2n) {
-  margin-left: auto;
-}
-
 .container {
   background: #fff;
   border-radius: 12px;
@@ -164,9 +156,10 @@ body {
 
 @media screen and (max-width: 500px) {
   .container {
-    padding: 8px;
-    width: 98%;
-    margin: 12px;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
   }
 }
 

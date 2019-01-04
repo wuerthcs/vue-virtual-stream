@@ -10,6 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "faker": "^4.1.0",
     "lorem-ipsum": "^1.0.6",
     "uuid": "^3.3.2",
     "vue": "^2.5.2"
