@@ -111,7 +111,7 @@
       handleScroll: throttle(function() {
         this.updateCurrentItems()
         this.$emit('scroll')
-      }, 200),
+      }, 100),
       handleStart(id) {
         const newStart = this.identifier.ids[id]
         this.start = newStart

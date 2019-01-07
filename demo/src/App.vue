@@ -21,7 +21,7 @@
 import LoremIpsum from 'lorem-ipsum'
 import faker from 'faker'
 import uuid from 'uuid/v4'
-import VirtualStream from './components/link/VirtualStream'
+import VirtualStream from '../../dist/vue-virtual-stream.esm'
 import Message from './components/Message'
 
 export default {
