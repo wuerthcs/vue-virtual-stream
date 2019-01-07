@@ -1,4 +1,4 @@
-import VirtualStream from '../demo/src/components/VirtualStream.vue'
+import VirtualStream from './components/VirtualStream.vue'
 
 export function install(Vue) {
     if (install.installed) return
