@@ -2,11 +2,15 @@
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
       <div class="VirtualStream__Track" ref="track">
-        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" :index="index" :maxIndex="currentView.length - 1" @resizeitem="updateItemDimension" @setstart="handleStart" @setend="handleEnd">
-          <slot
-            :item="item"
-            :index="index"
-          />
+        <Item
+          v-for="(item, index) in currentView"
+          :key="item.id" ref="items"
+          :id="item.id || index"
+          :index="index"
+          :maxIndex="currentView.length - 1"
+          @resizeitem="updateItemDimension"
+        >
+          <slot :item="item" :index="index" />
         </Item>
       </div>
     </div>
@@ -46,6 +50,7 @@
         end: 0,
         dimensions: {},
         totalHeight: 0,
+        ready: false,
       }
     },
     computed: {
@@ -67,17 +72,29 @@
         })
         return { indexes, ids }
       },
+      itemStyle() {
+        (!this.reversed) ? `top: 0px;` : `bottom: 0px;`
+      }
     },
     methods: {
-      handleScroll: throttle(function() {
+      updateCurrentItems() {
+        if (!this.ready) return false
         this.$emit('scroll')
-        const start = this.$refs.wrapper.scrollTop
-        const end = this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop
+        const start = (!this.reversed) ?
+          this.$refs.wrapper.scrollTop :
+          this.totalHeight - (this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop)
+
+        const end = (!this.reversed) ?
+          this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop :
+          this.totalHeight - this.$refs.wrapper.scrollTop
+
         const dimensions = Object.values(this.dimensions)
+
         const startItem = dimensions.filter(dimension => {
           const dimensionEnd = dimension.top + dimension.height
           return ((start >= dimension.top && start <= dimensionEnd))
         })
+
         const endItem = dimensions.filter(dimension => {
           const dimensionEnd = dimension.top + dimension.height
           return ((end >= dimension.top && end <= dimensionEnd))
@@ -90,6 +107,10 @@
         if (endItem[0]) {
           this.handleEnd(endItem[0].id)
         }
+      },
+      handleScroll: throttle(function() {
+        this.updateCurrentItems()
+        this.$emit('scroll')
       }, 200),
       handleStart(id) {
         const newStart = this.identifier.ids[id]
@@ -100,24 +121,45 @@
         this.end = newEnd
       },
       updateItemDimensions(d) {
+        this.ready = false
         this.$refs.items.forEach((item, i) => {
           const top = (() => {
             const previousIndex = this.identifier.ids[item.id] - 1
-            if (previousIndex < 0) return 0
+            if (previousIndex < 0)
+              return 0
+
             const previousId = this.identifier.indexes[previousIndex]
-            if (!this.dimensions[previousId]) return 0
+            if (!this.dimensions[previousId])
+              return 0
+
             return this.dimensions[previousId].top + this.dimensions[previousId].height
           })()
-          this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, top, id: item.id }
-          this.$emit('dimensions', this.dimensions)
+          this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top }
         })
 
+        const oldTotalHeight = this.totalHeight
+        const oldScrollTop = this.$refs.wrapper.scrollTop
         this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
           const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
           const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
           return aVal + bVal
         })
+
+        if (oldScrollTop !== 0) {
+          if (this.reversed && oldTotalHeight < this.totalHeight) {
+            const heightDiff = this.totalHeight - oldTotalHeight
+            window.requestAnimationFrame(() => {
+              this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+            })
+          }
+        }
+
         this.$refs.track.style.height = this.totalHeight + 'px'
+        this.$emit('dimensions', this.dimensions)
+
+        window.setTimeout(() => {
+          this.ready = true
+        }, 100)
       },
       updateItemDimension(d) {
         Object.assign(this.dimensions[d.id], d.dimensions)
@@ -127,12 +169,21 @@
       currentView(n) {
         this.$nextTick(() => {
           this.updateItemDimensions()
+          this.updateCurrentItems()
         })
       }
     },
     mounted() {
       this.$nextTick(() => {
         this.updateItemDimensions()
+        if (this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
+
+        this.handleScroll()
+
+        window.setTimeout(() => {
+          this.ready = true
+        }, 100)
+
         window.addEventListener('resize', debounce(() => {
           this.$refs.track.style.height = 0
           this.updateItemDimensions()
@@ -161,12 +212,11 @@
     width: 100%;
   }
 
-  .VirtualStream__Items {
-    transform: translate3d(0,0,0);
+  .VirtualStream__Track {
+    position: relative;
   }
 
-  .VirtualStream__Item {
-    position: absolute;
-    top: 0;
+  .VirtualStream__Items {
+    transform: translate3d(0,0,0);
   }
 </style>

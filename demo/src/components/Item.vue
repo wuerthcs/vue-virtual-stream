@@ -48,7 +48,9 @@ export default {
     computed: {
         styles() {
             if (!this.dimension) return ''
-            return `transform: translate3d(0, ${this.dimension.top}px, 0)`
+            const top = (!this.$parent.reversed) ? this.dimension.top : this.dimension.top * -1
+            const position = (!this.$parent.reversed) ? `top: 0;` : `bottom: 0;`
+            return `transform: translate3d(0, ${top}px, 0); ${position}`
         }
     }
 }
@@ -57,7 +59,6 @@ export default {
 <style scoped>
     .VirtualStream__Item {
         position: absolute;
-        top: 0;
         left: 0;
         right: 0;
     }
