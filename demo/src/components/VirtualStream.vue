@@ -16,7 +16,7 @@
 <script>
   import { throttle, debounce } from 'lodash'
   import getBrowser from '../utils/getBrowser'
-  import Item from './Item'
+  import Item from '@/components/Item'
 
   const browser = getBrowser()
   let locked = false
