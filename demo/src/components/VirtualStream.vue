@@ -136,7 +136,7 @@
         window.addEventListener('resize', debounce(() => {
           this.$refs.track.style.height = 0
           this.updateItemDimensions()
-        }, 350))
+        }, 60))
       })
     }
   }
