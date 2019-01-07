@@ -2,11 +2,15 @@
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
       <div class="VirtualStream__Track" ref="track">
-        <Item v-for="(item, index) in currentView" :key="item.id" ref="items" :id="item.id || index" :index="index" :maxIndex="currentView.length - 1" @resizeitem="updateItemDimension" @setstart="handleStart" @setend="handleEnd">
-          <slot
-            :item="item"
-            :index="index"
-          />
+        <Item
+          v-for="(item, index) in currentView"
+          :key="item.id" ref="items"
+          :id="item.id || index"
+          :index="index"
+          :maxIndex="currentView.length - 1"
+          @resizeitem="updateItemDimension"
+        >
+          <slot :item="item" :index="index" />
         </Item>
       </div>
     </div>
@@ -46,6 +50,7 @@
         end: 0,
         dimensions: {},
         totalHeight: 0,
+        ready: false,
       }
     },
     computed: {
@@ -70,6 +75,7 @@
     },
     methods: {
       handleScroll: throttle(function() {
+        if (!this.ready) return false
         this.$emit('scroll')
         const start = this.$refs.wrapper.scrollTop
         const end = this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop
@@ -133,6 +139,12 @@
     mounted() {
       this.$nextTick(() => {
         this.updateItemDimensions()
+        this.$refs.wrapper.scrollTop = this.totalHeight
+
+        window.setTimeout(() => {
+          this.ready = true
+        }, 100)
+
         window.addEventListener('resize', debounce(() => {
           this.$refs.track.style.height = 0
           this.updateItemDimensions()
