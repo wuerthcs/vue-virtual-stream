@@ -18,7 +18,8 @@
 </template>
 
 <script>
-  import { throttle, debounce } from 'lodash'
+  import throttle from 'lodash/throttle'
+  import debounce from 'lodash/debounce'
   import getBrowser from '../utils/getBrowser'
   import Item from './Item.vue'
 
@@ -109,6 +110,7 @@
         }
       },
       handleScroll: throttle(function() {
+        console.log('ayy')
         this.updateCurrentItems()
         this.$emit('scroll')
       }, 100),
@@ -139,6 +141,7 @@
 
         const oldTotalHeight = this.totalHeight
         const oldScrollTop = this.$refs.wrapper.scrollTop
+
         this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
           const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
           const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
@@ -169,7 +172,6 @@
       currentView(n) {
         this.$nextTick(() => {
           this.updateItemDimensions()
-          this.updateCurrentItems()
         })
       }
     },

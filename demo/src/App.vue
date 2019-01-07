@@ -23,7 +23,6 @@ import faker from 'faker'
 import uuid from 'uuid/v4'
 import VirtualStream from '../../dist/vue-virtual-stream.esm'
 import Message from './components/Message'
-
 export default {
   name: 'App',
   components: {
