@@ -1,8 +1,8 @@
 <template>
-  <div class="app" :class="{ 'app--isDebugging': debug }" id="app">
+  <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :preload="16" ref="stream">
+        <virtual-stream :items="items" :preload="16" ref="stream" :throttle-timing="5000">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>
@@ -32,7 +32,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(2000),
+      items: this.generateMessages(4000),
     }
   },
   methods: {
@@ -107,37 +107,12 @@ body {
   position: relative;
 }
 
-.app.app--isDebugging >>> .VirtualStream__Items--isPrev:before,
-.app.app--isDebugging >>> .VirtualStream__Items--isNext:before {
-  background: #ff0000;
-  bottom: 0;
-  content: '';
-  display: block;
-  height: 32px;
-  top: 0;
-  width: 100%;
-  position: absolute;
-  margin: auto;
-}
-
 .app >>> .VirtualStream__Items--isPrev:before {
   transform: translateY(32px);
 }
 
 .app >>> .VirtualStream__Items--isNext:before {
   transform: traslateY(-32px);
-}
-
-.app.app--isDebugging >>> .VirtualStream__Items--isPrev {
-  background: #ccfccc;
-}
-
-.app.app--isDebugging >>> .VirtualStream__Items--isCurrent {
-  background: #fccccc;
-}
-
-.app.app--isDebugging >>> .VirtualStream__Items--isNext {
-  background: #ccccfc;
 }
 
 .container {

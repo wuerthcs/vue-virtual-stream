@@ -30,10 +30,6 @@ export default {
             this.dimension = (d[this.id]) ? d[this.id] : null
         })
 
-        this.$parent.$on('scroll', (position) => {
-            this.recheckScrollPosition(position)
-        })
-
         this.ro = new ResizeObserver(elements => {
             elements.forEach((el, i) => {
                 this.$emit('resizeitem', {
@@ -48,37 +44,6 @@ export default {
         })
 
         this.ro.observe(this.$el)
-    },
-    methods: {
-        recheckScrollPosition(position) {
-            if (this.index === 0 || this.index === this.maxIndex) {
-                if (this.index === 0) {
-                    if (position.start < this.dimension.top) {
-                        this.$emit('setstart', this.id)
-                        this.$nextTick(() => {
-                            this.recheckScrollPosition(position)
-                        })
-                    }
-                }
-
-                if (this.index === this.maxIndex) {
-                    if (position.end > this.dimension.top + this.dimension.height) {
-                        this.$emit('setend', this.id)
-                        this.$nextTick(() => {
-                            this.recheckScrollPosition(position)
-                        })
-                    }
-                }
-            } else {
-                if ((position.start >= this.dimension.top) && (position.start <= this.dimension.top + this.dimension.height)) {
-                    this.$emit('setstart', this.id)
-                }
-    
-                if ((position.end >= this.dimension.top) && (position.end <= this.dimension.top + this.dimension.height)) {
-                    this.$emit('setend', this.id)
-                }
-            }
-        }
     },
     computed: {
         styles() {

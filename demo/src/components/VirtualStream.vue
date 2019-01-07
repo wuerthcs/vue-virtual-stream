@@ -14,6 +14,7 @@
 </template>
 
 <script>
+  import { throttle, debounce } from 'lodash'
   import getBrowser from '../utils/getBrowser'
   import Item from './Item'
 
@@ -68,24 +69,38 @@
       },
     },
     methods: {
-      handleScroll() {
-        this.$emit('scroll', {
-          start: this.$refs.wrapper.scrollTop,
-          end: this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop,
+      handleScroll: throttle(function() {
+        this.$emit('scroll')
+        const start = this.$refs.wrapper.scrollTop
+        const end = this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop
+        const dimensions = Object.values(this.dimensions)
+        const startItem = dimensions.filter(dimension => {
+          const dimensionEnd = dimension.top + dimension.height
+          return ((start >= dimension.top && start <= dimensionEnd))
         })
-      },
+        const endItem = dimensions.filter(dimension => {
+          const dimensionEnd = dimension.top + dimension.height
+          return ((end >= dimension.top && end <= dimensionEnd))
+        })
+
+        if (startItem[0]) {
+          this.handleStart(startItem[0].id)
+        }
+
+        if (endItem[0]) {
+          this.handleEnd(endItem[0].id)
+        }
+      }, 200),
       handleStart(id) {
-        console.log(this.dimensions)
-        console.log('SET START', id)
         const newStart = this.identifier.ids[id]
         this.start = newStart
       },
       handleEnd(id) {
-        console.log('SET END', id)
         const newEnd = this.identifier.ids[id]
         this.end = newEnd
       },
       updateItemDimensions(d) {
+        this.$refs.track.style.height = 0
         this.$refs.items.forEach((item, i) => {
           const top = (() => {
             const previousIndex = this.identifier.ids[item.id] - 1
@@ -94,7 +109,7 @@
             if (!this.dimensions[previousId]) return 0
             return this.dimensions[previousId].top + this.dimensions[previousId].height
           })()
-          this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, top }
+          this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, top, id: item.id }
           this.$emit('dimensions', this.dimensions)
         })
 
@@ -119,6 +134,9 @@
     mounted() {
       this.$nextTick(() => {
         this.updateItemDimensions()
+        window.addEventListener('resize', debounce(() => {
+          this.updateItemDimensions()
+        }, 350))
       })
     }
   }
