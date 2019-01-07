@@ -100,7 +100,6 @@
         this.end = newEnd
       },
       updateItemDimensions(d) {
-        this.$refs.track.style.height = 0
         this.$refs.items.forEach((item, i) => {
           const top = (() => {
             const previousIndex = this.identifier.ids[item.id] - 1
@@ -135,6 +134,7 @@
       this.$nextTick(() => {
         this.updateItemDimensions()
         window.addEventListener('resize', debounce(() => {
+          this.$refs.track.style.height = 0
           this.updateItemDimensions()
         }, 350))
       })
