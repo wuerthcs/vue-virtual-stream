@@ -49,7 +49,7 @@ We also offer **esm**, **unpkg** and **umd** versions. You can find all differen
 ```vue
 <template>
     <virtual-stream :items="items">
-        <template slot-scope="{ item, index }">
+        <template slot-scope="{ item }">
             <div>{{ item.text }}</div>
         </template>
     </virtual-stream>
@@ -78,7 +78,7 @@ We also offer **esm**, **unpkg** and **umd** versions. You can find all differen
 
 ```vue
 <VirtualStream :items="items">
-    <template slot-scope="{ item, index }">
+    <template slot-scope="{ item }">
         <div>{{ item.text }}</div>
     </template>
 </VirtualStream>
@@ -97,28 +97,24 @@ This prop can be used to enable scrolling from the bottom of the list. This will
 </VirtualStream>
 ```
 
-### itemsPerChunk
-This prop controls how many items will be rendered per chunk. One chunk is a set of items which handles rendering of the list. They are used to preload new content or remove old unused content.
+### preload
+This prop controls how many items should be preloaded before and after the current view. Play around with this for performance and ux tests.
 
 * **Types**: Number
 * **Required**: false
-* **Default**: 50
+* **Default**: 25
 
 ```vue
-<VirtualStream :items="items" :itemsPerChunk="8">
+<VirtualStream :items="items" :preload="50">
     ...
 </VirtualStream>
 ```
 
-### preloadOffset
-This prop controls how far you have to scroll in either the previous chunk or the next chunk to trigger a chunk skip to the next chunk. This is calculated in percent.
-
-* **Types**: Number
-* **Required**: false
-* **Default**: 50
-
 ## Events
-Events are not implemented yet but will follow soon
+
+### scroll
+
+This event is triggered whenever the virtualized list is scrolled.
 
 ## Maintainers
 This project is maintained by:
