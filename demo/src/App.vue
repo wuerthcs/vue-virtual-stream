@@ -21,8 +21,8 @@
 import LoremIpsum from 'lorem-ipsum'
 import faker from 'faker'
 import uuid from 'uuid/v4'
-import VirtualStream from '../components/VirtualStream'
-import Message from '../components/Message'
+import VirtualStream from './components/link/VirtualStream'
+import Message from './components/Message'
 
 export default {
   name: 'App',
