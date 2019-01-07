@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :preload="50" ref="stream" :throttle-timing="5000">
+        <virtual-stream :items="items" reversed :preload="40" ref="stream" :throttle-timing="5000">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>
@@ -32,7 +32,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(4000),
+      items: this.generateMessages(1500),
     }
   },
   methods: {
@@ -60,11 +60,8 @@ export default {
       }
     },
     addMessage() {
-      this.items.push(this.generateMessage(this.items.length))
+      this.items.unshift(this.generateMessage(this.items.length))
     },
-    updateItemsPerChunk(e) {
-      this.itemsPerChunk = Number(e.currentTarget.value)
-    }
   },
   mounted() {
     this.stream = this.$refs.stream

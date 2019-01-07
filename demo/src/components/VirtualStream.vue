@@ -77,10 +77,10 @@
       }
     },
     methods: {
-      handleScroll: throttle(function() {
+      updateCurrentItems() {
         if (!this.ready) return false
         this.$emit('scroll')
-        const start = (!this.reversed) ? 
+        const start = (!this.reversed) ?
           this.$refs.wrapper.scrollTop :
           this.totalHeight - (this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop)
 
@@ -107,6 +107,10 @@
         if (endItem[0]) {
           this.handleEnd(endItem[0].id)
         }
+      },
+      handleScroll: throttle(function() {
+        this.updateCurrentItems()
+        this.$emit('scroll')
       }, 200),
       handleStart(id) {
         const newStart = this.identifier.ids[id]
@@ -117,6 +121,7 @@
         this.end = newEnd
       },
       updateItemDimensions(d) {
+        this.ready = false
         this.$refs.items.forEach((item, i) => {
           const top = (() => {
             const previousIndex = this.identifier.ids[item.id] - 1
@@ -132,14 +137,29 @@
           this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top }
         })
 
+        const oldTotalHeight = this.totalHeight
+        const oldScrollTop = this.$refs.wrapper.scrollTop
         this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
           const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
           const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
           return aVal + bVal
         })
 
+        if (oldScrollTop !== 0) {
+          if (this.reversed && oldTotalHeight < this.totalHeight) {
+            const heightDiff = this.totalHeight - oldTotalHeight
+            window.requestAnimationFrame(() => {
+              this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+            })
+          }
+        }
+
         this.$refs.track.style.height = this.totalHeight + 'px'
         this.$emit('dimensions', this.dimensions)
+
+        window.setTimeout(() => {
+          this.ready = true
+        }, 100)
       },
       updateItemDimension(d) {
         Object.assign(this.dimensions[d.id], d.dimensions)
@@ -149,6 +169,7 @@
       currentView(n) {
         this.$nextTick(() => {
           this.updateItemDimensions()
+          this.updateCurrentItems()
         })
       }
     },
@@ -156,6 +177,8 @@
       this.$nextTick(() => {
         this.updateItemDimensions()
         if (this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
+
+        this.handleScroll()
 
         window.setTimeout(() => {
           this.ready = true
