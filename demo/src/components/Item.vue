@@ -16,20 +16,18 @@ export default {
             type: String,
             required: true,
         },
+        index: {
+            type: Number,
+            required: true,
+        },
+        maxIndex: {
+            type: Number,
+            required: true,
+        }
     },
     mounted() {
         this.$parent.$on('dimensions', (d) => {
-            this.dimension = (d[this.id]) ? d[this.id] : null      
-        })
-
-        this.$parent.$on('scroll', (position) => {
-            if ((position.start >= this.dimension.top) && (position.start <= this.dimension.top + this.dimension.height)) {
-                this.$emit('setstart', this.id)
-            }
-
-            if ((position.end >= this.dimension.top) && (position.end <= this.dimension.top + this.dimension.height)) {
-                this.$emit('setend', this.id)
-            }
+            this.dimension = (d[this.id]) ? d[this.id] : null
         })
 
         this.ro = new ResizeObserver(elements => {
