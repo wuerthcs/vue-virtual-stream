@@ -1,6 +1,6 @@
 {
   "name": "@zip-software/vue-virtual-stream",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A virtualized list view for chats, comment lists and streams in general.",
   "main": "dist/vue-virtual-stream.umd.js",
   "module": "dist/vue-virtual-stream.esm.js",
