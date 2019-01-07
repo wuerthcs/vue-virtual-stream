@@ -20,7 +20,7 @@
 <script>
   import { throttle, debounce } from 'lodash'
   import getBrowser from '../utils/getBrowser'
-  import Item from '/src/components/Item'
+  import Item from './Item.vue'
 
   const browser = getBrowser()
   let locked = false
