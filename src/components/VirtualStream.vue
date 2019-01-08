@@ -110,7 +110,6 @@
         }
       },
       handleScroll: throttle(function() {
-        console.log('ayy')
         this.updateCurrentItems()
         this.$emit('scroll')
       }, 100),
@@ -122,20 +121,27 @@
         const newEnd = this.identifier.ids[id]
         this.end = newEnd
       },
-      updateItemDimensions(d) {
+      getPreviousItemHeight(id) {
+        const previousIndex = (() => {
+          const index = this.identifier.ids[id] - 1
+          return (index >= 0) ? index : false
+        })()
+
+        const previousId = (() => {
+          const id = (previousIndex !== false) ? this.identifier.indexes[previousIndex] : false
+          return (id) ? id : false
+        })()
+
+        return this.getItemHeight(previousId)
+      },
+      getItemHeight(id) {
+        const dimensionItem = this.dimensions[id] || false
+        return (dimensionItem) ? dimensionItem.top + dimensionItem.height : 0
+      },
+      updateItemDimensions() {
         this.ready = false
         this.$refs.items.forEach((item, i) => {
-          const top = (() => {
-            const previousIndex = this.identifier.ids[item.id] - 1
-            if (previousIndex < 0)
-              return 0
-
-            const previousId = this.identifier.indexes[previousIndex]
-            if (!this.dimensions[previousId])
-              return 0
-
-            return this.dimensions[previousId].top + this.dimensions[previousId].height
-          })()
+          const top = this.getPreviousItemHeight(item.id)
           this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top }
         })
 
@@ -173,6 +179,9 @@
         this.$nextTick(() => {
           this.updateItemDimensions()
         })
+      },
+      items() {
+        this.updateCurrentItems()
       }
     },
     mounted() {
@@ -180,7 +189,7 @@
         this.updateItemDimensions()
         if (this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
 
-        this.handleScroll()
+        this.updateCurrentItems()
 
         window.setTimeout(() => {
           this.ready = true

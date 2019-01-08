@@ -6,7 +6,10 @@
           <img :src="data.avatar" :alt="data.author" class="Author__Avatar" />
           <span class="Author__Name">{{ data.author }}</span>
         </div>
-        <div class="Text">{{ data.message }}</div>
+        <div class="Text">
+          {{ data.message }}<br />
+          {{ data.id }}
+        </div>
       </div>
       <div v-if="data.attachment" class="Attachment" :class="{'Attachment--isAuthor': data.isRight }">
         <div class="Attachment__Overlay">
