@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :preload="40" ref="stream" :throttle-timing="5000">
+        <virtual-stream :items="items" reversed :preload="16" ref="stream" :throttle-timing="5000">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>

@@ -121,7 +121,9 @@
         const newEnd = this.identifier.ids[id]
         this.end = newEnd
       },
-      getPreviousItemHeight(id) {
+      getPreviousItemHeight(item) {
+        const id = item.id
+
         const previousIndex = (() => {
           const index = this.identifier.ids[id] - 1
           return (index >= 0) ? index : false
@@ -140,8 +142,12 @@
       },
       updateItemDimensions() {
         this.ready = false
-        this.$refs.items.forEach((item, i) => {
-          const top = this.getPreviousItemHeight(item.id)
+        this.$refs.items.sort((a, b) => {
+          if (a.index > b.index) return 1
+          if (a.index < b.index) return -1
+          return 0
+        }).forEach((item, i) => {
+          const top = this.getPreviousItemHeight(item)
           this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top }
         })
 
@@ -181,7 +187,9 @@
         })
       },
       items() {
-        this.updateCurrentItems()
+        this.$nextTick(() => {
+          this.updateCurrentItems()
+        })
       }
     },
     mounted() {
