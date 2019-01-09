@@ -40,7 +40,6 @@ export default {
                     }
                 })
             })
-
         })
 
         this.ro.observe(this.$el)

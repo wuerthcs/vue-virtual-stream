@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :count="80" :offset="20" ref="stream" :throttle-timing="5000">
+        <virtual-stream :items="items" :count="80" :offset="20" ref="stream" @scroll="handleScroll">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>
@@ -62,6 +62,19 @@ export default {
     addMessage() {
       this.items.unshift(this.generateMessage(this.items.length))
     },
+    handleScroll(pos) {
+      if (pos === 'start') {
+        console.log('scrolled to start')
+        return false
+      }
+
+      if (pos === 'end') {
+        console.log('scrolled to end')
+        return false
+      }
+
+      console.log(pos)
+    }
   },
   mounted() {
     this.stream = this.$refs.stream
