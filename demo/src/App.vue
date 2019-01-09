@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" reversed :preload="16" ref="stream" :throttle-timing="5000">
+        <virtual-stream :items="items" reversed :count="80" :offset="20" ref="stream" :throttle-timing="5000">
           <template slot-scope="{ item }">
             <Message :data="item" />
           </template>
@@ -31,7 +31,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(1500),
+      items: this.generateMessages(300),
     }
   },
   methods: {
@@ -48,6 +48,7 @@ export default {
 
       return {
         id: uuid(),
+        index: id,
         author: faker.name.findName(),
         avatar: faker.fake(`{{image.avatar}}`),
         message: LoremIpsum({

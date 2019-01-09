@@ -40,29 +40,36 @@
         type: Boolean,
         default: false,
       },
-      preload: {
+      count: {
         type: Number,
-        default: 25,
+        default: 40,
       },
+      offset: {
+        type: Number,
+        default: 5,
+      }
     },
     data() {
       return {
-        start: 0,
-        end: 0,
+        position: 0,
         dimensions: {},
         totalHeight: 0,
         ready: false,
+        trigger: {
+          start: false,
+          end: false,
+        },
+        triggerDimensions: false,
       }
     },
     computed: {
+      correctedCount() {
+        return Math.round(this.count / 2)
+      },
       currentView() {
-        return this.items.slice(this.startIndex, this.endIndex)
-      },
-      startIndex() {
-        return ((this.start - this.preload) < 0) ? 0 : this.start - this.preload
-      },
-      endIndex() {
-        return ((this.end + this.preload) > this.items.length) ? this.items.length : this.end + this.preload
+        const startPos = (this.position - this.correctedCount < 0) ? 0 : this.position - this.correctedCount
+        const endPos = (this.position + this.correctedCount > this.items.length) ? this.items.length : this.position + this.correctedCount
+        return this.items.slice(startPos, endPos)
       },
       identifier() {
         let indexes = []
@@ -73,53 +80,51 @@
         })
         return { indexes, ids }
       },
-      itemStyle() {
-        (!this.reversed) ? `top: 0px;` : `bottom: 0px;`
-      }
     },
     methods: {
-      updateCurrentItems() {
+      updateCurrentPosition() {
         if (!this.ready) return false
-        this.$emit('scroll')
-        const start = (!this.reversed) ?
-          this.$refs.wrapper.scrollTop :
-          this.totalHeight - (this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop)
+        const positions = {}
 
-        const end = (!this.reversed) ?
+        positions.start = (!this.reversed) ?
+          this.$refs.wrapper.scrollTop :
+          this.totalHeight - (this.$refs.wrapper.scrollTop + this.$refs.wrapper.offsetHeight)
+
+        positions.end = (!this.reversed) ?
           this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop :
           this.totalHeight - this.$refs.wrapper.scrollTop
 
-        const dimensions = Object.values(this.dimensions)
-
-        const startItem = dimensions.filter(dimension => {
-          const dimensionEnd = dimension.top + dimension.height
-          return ((start >= dimension.top && start <= dimensionEnd))
-        })
-
-        const endItem = dimensions.filter(dimension => {
-          const dimensionEnd = dimension.top + dimension.height
-          return ((end >= dimension.top && end <= dimensionEnd))
-        })
-
-        if (startItem[0]) {
-          this.handleStart(startItem[0].id)
+        if (this.triggerDimensions && this.triggerDimensions.start) {
+          if (this.position > 0 && (positions.start <= this.triggerDimensions.start.end)) {
+            this.updatePosition(this.trigger.start.id)
+          }
         }
 
-        if (endItem[0]) {
-          this.handleEnd(endItem[0].id)
+        if (this.triggerDimensions && this.triggerDimensions.end) {
+          if (positions.end >= this.triggerDimensions.end.start) {
+            this.updatePosition(this.trigger.end.id)
+          }
+        }
+
+        if (positions.start < this.triggerDimensions.start.start || positions.end > this.triggerDimensions.end.end) {
+          const dimensions = Object.values(this.dimensions)
+
+          const currentPosition = dimensions.filter(dimension => {
+            const dimensionEnd = dimension.top + dimension.height
+            return ((positions.end >= dimension.top && positions.end <= dimensionEnd))
+          })
+
+          if (currentPosition[0]) {
+            this.updatePosition(currentPosition[0].id)
+          }
         }
       },
       handleScroll: throttle(function() {
-        this.updateCurrentItems()
+        this.updateCurrentPosition()
         this.$emit('scroll')
       }, 100),
-      handleStart(id) {
-        const newStart = this.identifier.ids[id]
-        this.start = newStart
-      },
-      handleEnd(id) {
-        const newEnd = this.identifier.ids[id]
-        this.end = newEnd
+      updatePosition(id) {
+        this.position = this.identifier.ids[id]
       },
       getPreviousItemHeight(item) {
         const id = item.id
@@ -142,11 +147,13 @@
       },
       updateItemDimensions() {
         this.ready = false
-        this.$refs.items.sort((a, b) => {
+        const sortedItems = this.$refs.items.sort((a, b) => {
           if (a.index > b.index) return 1
           if (a.index < b.index) return -1
           return 0
-        }).forEach((item, i) => {
+        })
+
+        sortedItems.forEach((item, i) => {
           const top = this.getPreviousItemHeight(item)
           this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top }
         })
@@ -164,8 +171,30 @@
           if (this.reversed && oldTotalHeight < this.totalHeight) {
             const heightDiff = this.totalHeight - oldTotalHeight
             window.requestAnimationFrame(() => {
+              this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
               this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+              this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
             })
+          }
+        }
+
+        this.trigger = {
+          start: sortedItems[0],
+          end: sortedItems[this.$refs.items.length - this.offset]
+        }
+
+        this.triggerDimensions = {
+          full: {
+            start: this.dimensions[this.trigger.start.id],
+            end: this.dimensions[this.trigger.end.id],
+          },
+          start: {
+            start: this.dimensions[this.trigger.start.id].top,
+            end: this.dimensions[this.trigger.start.id].top + this.dimensions[this.trigger.start.id].height
+          },
+          end: {
+            start: this.dimensions[this.trigger.end.id].top,
+            end: this.dimensions[this.trigger.end.id].top + this.dimensions[this.trigger.end.id].height
           }
         }
 
@@ -178,7 +207,7 @@
       },
       updateItemDimension(d) {
         Object.assign(this.dimensions[d.id], d.dimensions)
-      }
+      },
     },
     watch: {
       currentView(n) {
@@ -188,16 +217,18 @@
       },
       items() {
         this.$nextTick(() => {
-          this.updateCurrentItems()
+          this.updateCurrentPosition()
         })
       }
     },
     mounted() {
       this.$nextTick(() => {
         this.updateItemDimensions()
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
         if (this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
+        this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
 
-        this.updateCurrentItems()
+        this.updateCurrentPosition()
 
         window.setTimeout(() => {
           this.ready = true
@@ -224,7 +255,7 @@
   }
 
   .VirtualStream__Wrapper {
-    -webkit-overflow-scrolling: touch;
+    /* -webkit-overflow-scrolling: touch; */
     height: 100%;
     overflow: auto;
     transform: translate3d(0,0,0);
