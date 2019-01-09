@@ -1,6 +1,11 @@
 <template>
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
+      <div class="VirtualStream__Track VirtualStream__Track--newItems" ref="newItemsList">
+        <Item v-for="(item, index) in newItems" :id="item.id" :index="index" :maxIndex="newItems.length" :key="item.id" ref="newItems">
+          <slot :item="item" :index="index" />
+        </Item>
+      </div>
       <div class="VirtualStream__Track" ref="track">
         <Item
           v-for="(item, index) in currentView"
@@ -60,9 +65,14 @@
           end: false,
         },
         triggerDimensions: false,
+        newItems: [],
+        receivedNewItems: false,
       }
     },
     computed: {
+      itemCount() {
+        return this.items.length
+      },
       correctedCount() {
         return Math.round(this.count / 2)
       },
@@ -82,8 +92,7 @@
       },
     },
     methods: {
-      updateCurrentPosition() {
-        if (!this.ready) return false
+      updateCurrentPosition(force) {
         const positions = {}
 
         positions.start = (!this.reversed) ?
@@ -93,6 +102,18 @@
         positions.end = (!this.reversed) ?
           this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop :
           this.totalHeight - this.$refs.wrapper.scrollTop
+        
+        if (positions.end === this.totalHeight) this.$emit('scroll', 'end')
+
+        if (positions.start === 0) {
+          this.$emit('scroll', 'start')
+        } else if (positions.end === this.totalHeight) {
+          this.$emit('scroll', 'end')
+        } else {
+          this.$emit('scroll', positions)
+        }
+
+        if (!this.ready && !force) return false
 
         if (this.triggerDimensions && this.triggerDimensions.start) {
           if (this.position > 0 && (positions.start <= this.triggerDimensions.start.end)) {
@@ -121,7 +142,6 @@
       },
       handleScroll: throttle(function() {
         this.updateCurrentPosition()
-        this.$emit('scroll')
       }, 100),
       updatePosition(id) {
         this.position = this.identifier.ids[id]
@@ -167,14 +187,29 @@
           return aVal + bVal
         })
 
-        if (oldScrollTop !== 0) {
-          if (this.reversed && oldTotalHeight < this.totalHeight) {
-            const heightDiff = this.totalHeight - oldTotalHeight
-            window.requestAnimationFrame(() => {
-              this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-              this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
-              this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
-            })
+        if (this.receivedNewItems) {
+          if (!this.reversed) {
+            if (oldScrollTop !== 0) {
+              if (oldTotalHeight < this.totalHeight) {
+                const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
+                window.requestAnimationFrame(() => {
+                  this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+                  this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+                  this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+                })
+              }
+            }  
+          }
+        } else {
+          if (oldScrollTop !== 0) {
+            if (this.reversed && oldTotalHeight < this.totalHeight) {
+              const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
+              window.requestAnimationFrame(() => {
+                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+                this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+                this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+              })
+            }
           }
         }
 
@@ -203,21 +238,63 @@
 
         window.setTimeout(() => {
           this.ready = true
+          this.receivedNewItems = false
         }, 100)
       },
       updateItemDimension(d) {
         Object.assign(this.dimensions[d.id], d.dimensions)
       },
+      updateAllDimensions() {
+        const sortedItems = this.$refs.items.sort((a, b) => {
+          if (a.index > b.index) return 1
+          if (a.index < b.index) return -1
+          return 0
+        })
+
+        if (this.$refs.newItems) {
+          this.$refs.newItems.forEach((item, i) => {
+            this.dimensions[item.id] = { height: item.$el.offsetHeight, width: item.$el.offsetWidth, id: item.id, top: 0 }
+          })
+        }
+
+        const newItemHeight = (!this.$refs.newItems) ? false : this.$refs.newItems.reduce((a, b) => {
+          const aVal = (typeof a === 'number') ? a : a.$el.offsetHeight
+          const bVal = (typeof b === 'number') ? b : b.$el.offsetHeight
+          return aVal + bVal
+        }, 0)
+
+        const newDimensions = {}
+
+        Object.keys(this.dimensions).forEach((key, i) => {
+          const dimension = this.dimensions[key]
+          Object.assign(this.dimensions[key], { top: dimension.top + newItemHeight })
+        })
+      }
     },
     watch: {
       currentView(n) {
         this.$nextTick(() => {
           this.updateItemDimensions()
+          this.$nextTick(() => {
+            this.updateCurrentPosition()
+          })
         })
       },
-      items() {
+      itemCount(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          const diffCount = Math.abs(newVal - oldVal)
+          this.newItems = this.items.slice(0, diffCount)
+          this.receivedNewItems = true
+          this.$emit('newitem')
+        } else {
+          this.newItems = []
+          this.receivedNewItems = false
+        }
+
+        this.updateAllDimensions()
+        
         this.$nextTick(() => {
-          this.updateCurrentPosition()
+          this.updateCurrentPosition(true)
         })
       }
     },
@@ -264,6 +341,16 @@
 
   .VirtualStream__Track {
     position: relative;
+  }
+
+  .VirtualStream__Track--newItems {
+    left: -99999px;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    transform: translateX(-99999999px);
+    width: 100%;
   }
 
   .VirtualStream__Items {
