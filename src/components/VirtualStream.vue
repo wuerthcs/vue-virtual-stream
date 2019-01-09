@@ -124,7 +124,6 @@
         this.$emit('scroll')
       }, 100),
       updatePosition(id) {
-        console.log(this.identifier.ids[id])
         this.position = this.identifier.ids[id]
       },
       getPreviousItemHeight(item) {
