@@ -16,7 +16,8 @@
     "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-virtual-stream.esm.js",
     "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-virtual-stream.min.js",
     "dev": "rollup --config build/rollup.config.js --format es --file dist/vue-virtual-stream.esm.js --watch",
-    "publish-demo": "cd ./src && npm run build && gh-pages -d ./dist",
+    "push-demo": "gh-pages -d ./dist",
+    "publish-demo": "cd ./src && npm run build && npm run push-demo",
     "full-publish": "npm run install-all && npm run build && npm run publish-demo"
   },
   "repository": {
