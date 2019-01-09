@@ -97,18 +97,25 @@ This prop can be used to enable scrolling from the bottom of the list. This will
 </VirtualStream>
 ```
 
-### preload
-This prop controls how many items should be preloaded before and after the current view. Play around with this for performance and ux tests.
+### count
+This prop controls how many items should be loaded into the DOM. Play around with this for performance and ux tests.
 
 * **Types**: Number
 * **Required**: false
-* **Default**: 25
+* **Default**: 40
 
 ```vue
 <VirtualStream :items="items" :preload="50">
     ...
 </VirtualStream>
 ```
+
+### offset
+This prop controls the offset (count of items) that will be used to detect when the list of virtualized items will be updated. Adjust this to your needs.
+
+* **Types**: Number
+* **Required**: false
+* **Default**: 5
 
 ## Events
 

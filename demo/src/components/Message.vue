@@ -7,6 +7,7 @@
           <span class="Author__Name">{{ data.author }}</span>
         </div>
         <div class="Text">
+          {{ data.index }}<br />
           {{ data.message }}<br />
           {{ data.id }}
         </div>
