@@ -14,7 +14,6 @@ export default {
     props: {
         id: {
             type: String,
-            required: true,
         },
         index: {
             type: Number,
@@ -32,13 +31,15 @@ export default {
 
         this.ro = new ResizeObserver(elements => {
             elements.forEach((el, i) => {
-                this.$emit('resizeitem', {
-                    id: this.id,
-                    dimensions: {
-                        w: el.target.offsetWidth,
-                        h: el.target.offsetHeight,
-                    }
-                })
+                if (this.id) {
+                    this.$emit('resizeitem', {
+                        id: this.id,
+                        dimensions: {
+                            w: el.target.offsetWidth,
+                            h: el.target.offsetHeight,
+                        }
+                    })
+                }
             })
         })
 
@@ -46,7 +47,7 @@ export default {
     },
     computed: {
         styles() {
-            if (!this.dimension) return ''
+            if (!this.dimension || !this.id) return 'transform: translate3d(0, -9999999999999px, 0);'
             const top = (!this.$parent.reversed) ? this.dimension.top : this.dimension.top * -1
             const position = (!this.$parent.reversed) ? `top: 0;` : `bottom: 0;`
             return `transform: translate3d(0, ${top}px, 0); ${position}`

@@ -8,14 +8,14 @@
       </div>
       <div class="VirtualStream__Track" ref="track">
         <Item
-          v-for="(item, index) in currentView"
-          :key="item.id" ref="items"
-          :id="item.id || index"
-          :index="index"
+          v-for="index in count"
+          :key="(currentView[index - 1]) ? currentView[index - 1].id : null" ref="items"
+          :id="(currentView[index - 1]) ? currentView[index - 1].id : null"
+          :index="index - 1"
           :maxIndex="currentView.length - 1"
           @resizeitem="updateItemDimension"
         >
-          <slot :item="item" :index="index" />
+          <slot v-if="currentView[index - 1]" :item="currentView[index -1]" :index="index - 1" />
         </Item>
       </div>
     </div>
@@ -167,7 +167,9 @@
       },
       updateItemDimensions() {
         this.ready = false
-        const sortedItems = this.$refs.items.sort((a, b) => {
+        const sortedItems = this.$refs.items.filter((item) => {
+          return (item.id !== null)
+        }).sort((a, b) => {
           if (a.index > b.index) return 1
           if (a.index < b.index) return -1
           return 0
@@ -215,7 +217,7 @@
 
         this.trigger = {
           start: sortedItems[0],
-          end: sortedItems[this.$refs.items.length - this.offset]
+          end: sortedItems[sortedItems.length - this.offset]
         }
 
         this.triggerDimensions = {
@@ -245,7 +247,9 @@
         Object.assign(this.dimensions[d.id], d.dimensions)
       },
       updateAllDimensions() {
-        const sortedItems = this.$refs.items.sort((a, b) => {
+        const sortedItems = this.$refs.items.filter((item) => {
+          return (item.id !== null)
+        }).sort((a, b) => {
           if (a.index > b.index) return 1
           if (a.index < b.index) return -1
           return 0
