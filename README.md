@@ -121,7 +121,15 @@ This prop controls the offset (count of items) that will be used to detect when 
 
 ### scroll
 
-This event is triggered whenever the virtualized list is scrolled.
+This event is triggered whenever the virtualized list is scrolled. When scrolled to the start / end you will receive `start` or `end` as a data passed by the event
+
+### dimensions
+
+Will be emitted when the dimensions were recalculated
+
+### newitem
+
+Will be emitted when a new item was added to the virtualized list
 
 ## Maintainers
 This project is maintained by:
