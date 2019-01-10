@@ -183,7 +183,7 @@
         const oldTotalHeight = this.totalHeight
         const oldScrollTop = this.$refs.wrapper.scrollTop
 
-        this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
+        this.totalHeight = !this.dimensions.length ? 0 : Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
           const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
           const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
           return aVal + bVal
