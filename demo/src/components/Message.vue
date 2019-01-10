@@ -1,16 +1,15 @@
 <template>
-  <div class="Message">
+  <div class="Message" v-tooltip="data.index + ' - ' + data.id">
     <div class="Message__Wrapper" :class="{'Message__Wrapper--isAuthor': data.isRight }">
       <div class="Message__Bubble" :class="{'Message__Bubble--isAuthor': data.isRight }">
         <div class="Author" v-if="!data.isRight">
-          <img :src="data.avatar" :alt="data.author" class="Author__Avatar" />
+          <Avatar :url="data.avatar" :alt="data.author" round />
           <span class="Author__Name">{{ data.author }}</span>
         </div>
         <div class="Text">
-          {{ data.index }}<br />
-          {{ data.message }}<br />
-          {{ data.id }}
+          {{ data.message }}
         </div>
+        <Status :state="status" />
       </div>
       <div v-if="data.attachment" class="Attachment" :class="{'Attachment--isAuthor': data.isRight }">
         <div class="Attachment__Overlay">
@@ -23,11 +22,45 @@
 </template>
 
 <script>
+import Avatar from './Avatar'
+import Status from './Status'
+
 export default {
+  components: {
+    Avatar,
+    Status,
+  },
   props: {
     data: {
       type: Object,
-      required: true
+      required: true,
+    }
+  },
+  data() {
+    return {
+      status: 'SENDING',
+      statusTimer: false,
+    }
+  },
+  mounted() {
+    this.simulateStatus()
+  },
+  beforeDestroy() {
+    window.clearTimeout(this.statusTimer)
+    this.statusTimer = false
+  },
+  methods: {
+    simulateStatus() {
+      this.setStatus('SEND', 1500)
+        .then(() => { this.setStatus('READ', 3000) })
+    },
+    setStatus(status, timeout) {
+      return new Promise((resolve, reject) => {
+        this.statusTimer = window.setTimeout(() => {
+          this.status = status
+          resolve(true)
+        }, timeout)
+      })
     }
   }
 }
@@ -72,16 +105,10 @@ export default {
   align-items: center;
 }
 
-.Author__Avatar {
-  border-radius: 50%;
-  height: 24px;
-  width: 24px;
-  margin-right: 8px;
-}
-
 .Author__Name {
   font-weight: 600;
   line-height: 1;
+  margin-left: 8px;
 }
 
 .Attachment {

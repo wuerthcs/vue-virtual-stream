@@ -78,6 +78,9 @@ export default {
   },
   mounted() {
     this.stream = this.$refs.stream
+    window.setInterval(() => {
+      this.addMessage()
+    }, 500)
   }
 }
 </script>
