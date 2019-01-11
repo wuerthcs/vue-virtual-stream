@@ -142,6 +142,9 @@
       },
       handleScroll: throttle(function() {
         this.updateCurrentPosition()
+        window.setTimeout(() => {
+          this.updateCurrentPosition()
+        }, 150)
       }, 100),
       updatePosition(id) {
         this.position = this.identifier.ids[id]
@@ -183,9 +186,9 @@
         const oldTotalHeight = this.totalHeight
         const oldScrollTop = this.$refs.wrapper.scrollTop
 
-        this.totalHeight = !this.dimensions.length ? 0 : Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
-          const aVal = (dimensionA.height) ? dimensionA.height : dimensionA
-          const bVal = (dimensionB.height) ? dimensionB.height : dimensionB
+        this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
+          const aVal = (typeof dimensionA === 'object') ? dimensionA.height : dimensionA
+          const bVal = (typeof dimensionB === 'object') ? dimensionB.height : dimensionB
           return aVal + bVal
         })
 

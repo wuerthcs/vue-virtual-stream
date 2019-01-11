@@ -31,7 +31,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(300),
+      items: this.generateMessages(2000),
     }
   },
   methods: {
@@ -79,7 +79,9 @@ export default {
   mounted() {
     this.stream = this.$refs.stream
     window.setInterval(() => {
-      this.addMessage()
+      if (this.addMessages) {
+        this.addMessage()
+      }
     }, 500)
   }
 }
