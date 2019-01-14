@@ -67,7 +67,7 @@ We also offer **esm**, **unpkg** and **umd** versions. You can find all differen
 </script>
 ```
 
-## Options
+## Options (Props)
 
 ### items
 `items` needs to be an array of items to iterate through. You can use the `<template>` tag to customize rendering of items from outside of the component.
@@ -116,6 +116,13 @@ This prop controls the offset (count of items) that will be used to detect when 
 * **Types**: Number
 * **Required**: false
 * **Default**: 5
+
+### watchResizes
+This prop handles if the virtualization should watch resize events
+
+* **Types**: Boolean
+* **Required**: false
+* **Default**: true
 
 ## Events
 

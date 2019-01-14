@@ -2,17 +2,18 @@
   <div class="VirtualStream__Scroller" ref="container">
     <div class="VirtualStream__Wrapper" ref="wrapper" @scroll.passive="handleScroll">
       <div class="VirtualStream__Track VirtualStream__Track--newItems" ref="newItemsList">
-        <Item v-for="(item, index) in newItems" :id="item.id" :index="index" :maxIndex="newItems.length" :key="item.id" ref="newItems">
+        <Item v-for="(item, index) in newItems" :id="item.id" :index="index" :maxIndex="newItems.length" :key="item.id" ref="newItems" disableResizer>
           <slot :item="item" :index="index" />
         </Item>
       </div>
       <div class="VirtualStream__Track" ref="track">
         <Item
           v-for="index in count"
-          :key="(currentView[index - 1]) ? currentView[index - 1].id : null" ref="items"
+          :key="(currentView[index - 1]) ? currentView[index - 1].id : null"
           :id="(currentView[index - 1]) ? currentView[index - 1].id : null"
           :index="index - 1"
           :maxIndex="currentView.length - 1"
+          ref="items"
         >
           <slot v-if="currentView[index - 1]" :item="currentView[index -1]" :index="index - 1" />
         </Item>
@@ -51,6 +52,10 @@
       offset: {
         type: Number,
         default: 5,
+      },
+      watchResizes: {
+        type: Boolean,
+        default: true,
       }
     },
     data() {
@@ -169,6 +174,7 @@
       },
       updateItemDimensions() {
         this.ready = false
+        console.log('do all this calc stuff')
         const sortedItems = this.$refs.items.filter((item) => {
           return (item.id !== null)
         }).sort((a, b) => {
@@ -306,7 +312,11 @@
     },
     created() {
       this.$on('resize-item', (data) => {
-        this.updateItemDimensions()
+        if (this.watchResizes) {
+          if (data.dimensions.w !== this.dimensions[data.id].width || data.dimensions.h !== this.dimensions[data.id].height) {
+            this.updateItemDimensions()
+          }
+        }
       })
     },
     mounted() {
@@ -323,7 +333,6 @@
         }, 100)
 
         window.addEventListener('resize', debounce(() => {
-          this.$refs.track.style.height = 0
           this.updateItemDimensions()
         }, 60))
       })

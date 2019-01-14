@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :count="80" :offset="20" ref="stream" @scroll="handleScroll">
+        <virtual-stream :items="items" :count="40" :offset="8" ref="stream" @scroll="handleScroll">
           <template slot-scope="{ item }">
             <div v-on:click="updateMessage(item)">
               <Message :data="item" />
@@ -65,11 +65,13 @@ export default {
       this.items.unshift(this.generateMessage(this.items.length))
     },
     updateMessage(item) {
+      const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
       const index = item.index
       this.items[index].message = LoremIpsum({
         sentenceLowerBound: 5,
         sentenceUpperBound: 200,
       })
+      this.items[index].attachment = (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null
     },
     handleScroll(pos) {
       if (pos === 'start') {

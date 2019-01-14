@@ -8,7 +8,7 @@
 export default {
     data() {
         return {
-            dimension: null
+            dimension: null,
         }
     },
     props: {
@@ -22,6 +22,10 @@ export default {
         maxIndex: {
             type: Number,
             required: true,
+        },
+        disableResizer: {
+            type: Boolean,
+            default: false,
         }
     },
     mounted() {
@@ -29,22 +33,24 @@ export default {
             this.dimension = (d[this.id]) ? d[this.id] : null
         })
 
-        this.ro = new ResizeObserver(elements => {
-            elements.forEach((el, i) => {
-                if (this && this.id) {
-                    const payload = {
-                        id: this.id,
-                        dimensions: {
-                            w: el.target.offsetWidth,
-                            h: el.target.offsetHeight,
+        if (!this.disableResizer) {
+            this.ro = new ResizeObserver(elements => {
+                elements.forEach((el, i) => {
+                    if (this && this.id) {
+                        const payload = {
+                            id: this.id,
+                            dimensions: {
+                                w: el.target.offsetWidth,
+                                h: el.target.offsetHeight,
+                            }
                         }
+                        this.$parent.$emit('resize-item', payload)
                     }
-                    this.$parent.$emit('resize-item', payload)
-                }
+                })
             })
-        })
 
-        this.ro.observe(this.$el)
+            this.ro.observe(this.$el)
+        }
     },
     computed: {
         styles() {
