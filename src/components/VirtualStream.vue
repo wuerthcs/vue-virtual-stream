@@ -233,7 +233,7 @@
 
         this.trigger = {
           start: sortedItems[0],
-          end: Math.max(sortedItems[sortedItems.length - this.offset], sortedItems.length)
+          end: Math.max(sortedItems[sortedItems.length - this.offset], sortedItems.length - 1)
         }
 
         this.triggerDimensions = {
