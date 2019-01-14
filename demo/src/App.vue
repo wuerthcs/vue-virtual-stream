@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :count="40" :offset="8" ref="stream" @scroll="handleScroll">
+        <virtual-stream :items="items" :count="40" :offset="8" ref="stream" @scroll="handleScroll" attachToStart reversed>
           <template slot-scope="{ item }">
             <div v-on:click="updateMessage(item)">
               <Message :data="item" />

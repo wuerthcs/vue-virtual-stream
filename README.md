@@ -124,6 +124,20 @@ This prop handles if the virtualization should watch resize events
 * **Required**: false
 * **Default**: true
 
+### attachToStart
+Handles if the stream should attach to the start position when new items are added (Chat mode)
+
+* **Types**: Boolean
+* **Required**: false
+* **Default**: false
+
+### attachToEnd
+Handles if the stream should attach to the end when new items are added
+
+* **Types**: Boolean
+* **Required**: false
+* **Default**: false
+
 ## Events
 
 ### scroll

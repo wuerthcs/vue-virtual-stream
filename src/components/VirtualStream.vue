@@ -80,6 +80,7 @@
         triggerDimensions: false,
         newItems: [],
         receivedNewItems: false,
+        scrollAttachedTo: false,
       }
     },
     computed: {
@@ -120,10 +121,13 @@
 
         if (positions.start === 0) {
           this.$emit('scroll', 'start')
+          this.scrollAttachedTo = 'start'
         } else if (positions.end === this.totalHeight) {
           this.$emit('scroll', 'end')
+          this.scrollAttachedTo = 'end'
         } else {
           this.$emit('scroll', positions)
+          this.scrollAttachedTo = false
         }
 
         if (!this.ready && !force) return false
@@ -317,6 +321,15 @@
         this.updateAllDimensions()
         
         this.$nextTick(() => {
+          if (newVal > oldVal) {
+            if (this.attachToStart && this.scrollAttachedTo === 'start') {
+              this.$refs.wrapper.scrollTop = (!this.reversed) ? 0 : this.totalHeight
+            }
+
+            if (this.attachToEnd && this.scrollAttachedTo === 'end') {
+              this.$refs.wrapper.scrollTop = (!this.reversed) ? this.totalHeight : 0
+            }
+          }
           this.updateCurrentPosition(true)
         })
       }
