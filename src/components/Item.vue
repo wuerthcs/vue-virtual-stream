@@ -31,14 +31,15 @@ export default {
 
         this.ro = new ResizeObserver(elements => {
             elements.forEach((el, i) => {
-                if (this.id) {
-                    this.$emit('resizeitem', {
+                if (this && this.id) {
+                    const payload = {
                         id: this.id,
                         dimensions: {
                             w: el.target.offsetWidth,
                             h: el.target.offsetHeight,
                         }
-                    })
+                    }
+                    this.$parent.$emit('resize-item', payload)
                 }
             })
         })

@@ -13,7 +13,6 @@
           :id="(currentView[index - 1]) ? currentView[index - 1].id : null"
           :index="index - 1"
           :maxIndex="currentView.length - 1"
-          @resizeitem="updateItemDimension"
         >
           <slot v-if="currentView[index - 1]" :item="currentView[index -1]" :index="index - 1" />
         </Item>
@@ -304,6 +303,11 @@
           this.updateCurrentPosition(true)
         })
       }
+    },
+    created() {
+      this.$on('resize-item', (data) => {
+        this.updateItemDimensions()
+      })
     },
     mounted() {
       this.$nextTick(() => {

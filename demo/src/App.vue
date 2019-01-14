@@ -4,7 +4,9 @@
       <div class="container-inner">
         <virtual-stream :items="items" :count="80" :offset="20" ref="stream" @scroll="handleScroll">
           <template slot-scope="{ item }">
-            <Message :data="item" />
+            <div v-on:click="updateMessage(item)">
+              <Message :data="item" />
+            </div>
           </template>
         </virtual-stream>
       </div>
@@ -61,6 +63,13 @@ export default {
     },
     addMessage() {
       this.items.unshift(this.generateMessage(this.items.length))
+    },
+    updateMessage(item) {
+      const index = item.index
+      this.items[index].message = LoremIpsum({
+        sentenceLowerBound: 5,
+        sentenceUpperBound: 200,
+      })
     },
     handleScroll(pos) {
       if (pos === 'start') {
