@@ -56,7 +56,15 @@
       watchResizes: {
         type: Boolean,
         default: true,
-      }
+      },
+      attachToStart: {
+        type: Boolean,
+        default: false,
+      },
+      attachToEnd: {
+        type: Boolean,
+        default: false,
+      },
     },
     data() {
       return {
@@ -225,7 +233,7 @@
 
         this.trigger = {
           start: sortedItems[0],
-          end: sortedItems[sortedItems.length - this.offset]
+          end: Math.max(sortedItems[sortedItems.length - this.offset], 25)
         }
 
         this.triggerDimensions = {
