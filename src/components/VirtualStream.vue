@@ -231,9 +231,12 @@
           }
         }
 
+        const startIndex = 0
+        const endIndex = Math.max(sortedItems.length - this.offset, sortedItems.length - 1)
+
         this.trigger = {
-          start: sortedItems[0],
-          end: Math.max(sortedItems[sortedItems.length - this.offset], sortedItems.length - 1)
+          start: sortedItems[startIndex],
+          end: sortedItems[endIndex]
         }
 
         this.triggerDimensions = {
