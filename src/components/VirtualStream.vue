@@ -61,6 +61,7 @@
     data() {
       return {
         position: 0,
+        oldPosition: 0,
         dimensions: {},
         totalHeight: 0,
         ready: false,
@@ -174,7 +175,6 @@
       },
       updateItemDimensions() {
         this.ready = false
-        console.log('do all this calc stuff')
         const sortedItems = this.$refs.items.filter((item) => {
           return (item.id !== null)
         }).sort((a, b) => {
@@ -314,7 +314,12 @@
       this.$on('resize-item', (data) => {
         if (this.watchResizes) {
           if (data.dimensions.w !== this.dimensions[data.id].width || data.dimensions.h !== this.dimensions[data.id].height) {
-            this.updateItemDimensions()
+            if (this.position === this.oldPosition) {
+              this.updateItemDimensions()
+            }
+            window.setTimeout(() => {
+              this.oldPosition = this.position
+            }, 50)
           }
         }
       })
