@@ -92,7 +92,7 @@
       },
       currentView() {
         const startPos = (this.position - this.correctedCount < 0) ? 0 : this.position - this.correctedCount
-        const endPos = (this.position + this.correctedCount > this.items.length) ? this.items.length : this.position + this.correctedCount
+        const endPos = (this.position + this.count > this.items.length) ? this.items.length : this.position + this.count
         return this.items.slice(startPos, endPos)
       },
       identifier() {
@@ -236,7 +236,7 @@
         }
 
         const startIndex = 0
-        const endIndex = Math.max(sortedItems.length - this.offset, sortedItems.length - 1)
+        const endIndex = ((sortedItems.length - 1) - (this.count - this.offset) < 0) ?  sortedItems.length - 1 : this.count - this.offset
 
         this.trigger = {
           start: sortedItems[startIndex],

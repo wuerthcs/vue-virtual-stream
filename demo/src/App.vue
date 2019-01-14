@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :count="40" :offset="8" ref="stream" @scroll="handleScroll" attachToStart reversed>
+        <virtual-stream :items="items" :count="120" :offset="80" ref="stream" attachToStart reversed>
           <template slot-scope="{ item }">
             <div v-on:click="updateMessage(item)">
               <Message :data="item" />
@@ -73,19 +73,6 @@ export default {
       })
       this.items[index].attachment = (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null
     },
-    handleScroll(pos) {
-      if (pos === 'start') {
-        console.log('scrolled to start')
-        return false
-      }
-
-      if (pos === 'end') {
-        console.log('scrolled to end')
-        return false
-      }
-
-      console.log(pos)
-    }
   },
   mounted() {
     this.stream = this.$refs.stream
