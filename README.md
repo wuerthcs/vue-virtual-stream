@@ -10,6 +10,20 @@ This repository contains
 2. Scripts to built your own packaged versions via rollup
 3. An example demo
 
+## Example
+
+```html
+<template>
+    <div class="my-component">
+        <VirtualStream :items="myItems" :count="100" :offset="20">
+            <template slot-scope="{ item, index }">
+                <div>{{ item.text }} - {{ index }}</div>
+            </template>
+        </VirtualStream>
+    </div>
+</template>
+```
+
 ## Documentation
 
 You can find the documentation [here](https://vue-virtual-stream.zip.app/).
