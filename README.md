@@ -1,8 +1,6 @@
-# vue-virtual-stream ([Demo](https://zip-software.github.io/vue-virtual-stream/))
+# vue-virtual-stream - [Demo](https://zip-software.github.io/vue-virtual-stream/)
 
 > A virtualized list component for chats, comment lists and streams in general.
-
-[Demo](https://zip-software.github.io/vue-virtual-stream/)
 
 This Vue component can be used to build large lists of virtual components without a limited amount of items (For example chats, comment sections, streams, etc.). It's not optimized for fetched data yet but will be optimized in the future.
 
