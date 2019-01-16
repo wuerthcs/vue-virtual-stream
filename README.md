@@ -6,9 +6,6 @@
 
 This Vue component can be used to build large lists of virtual components without a limited amount of items (For example chats, comment sections, streams, etc.). It's not optimized for fetched data yet but will be optimized in the future.
 
-**IMPORTANT NOTE**<br />
-This package is not final yet and still in development. There can be strange behaviour while scrolling or recalculation of heights. Please create issues whenever you encounter a problem.
-
 This repository contains
 
 1. The source files for the Vue component
@@ -105,7 +102,7 @@ This prop controls how many items should be loaded into the DOM. Play around wit
 * **Default**: 40
 
 ```vue
-<VirtualStream :items="items" :preload="50">
+<VirtualStream :items="items" :count="50">
     ...
 </VirtualStream>
 ```
@@ -132,7 +129,7 @@ Handles if the stream should attach to the start position when new items are add
 * **Default**: false
 
 ### attachToEnd
-Handles if the stream should attach to the end when new items are added
+Handles if the stream should attach to the end when new items are added (Stream mode)
 
 * **Types**: Boolean
 * **Required**: false
