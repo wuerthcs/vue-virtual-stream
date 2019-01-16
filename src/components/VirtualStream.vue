@@ -295,7 +295,7 @@
 
         this.trigger = {
           start: sortedItems[startIndex],
-          end: sortedItems[endIndex]
+          end: sortedItems[sortedItems.length - endIndex]
         }
 
         this.triggerDimensions = {

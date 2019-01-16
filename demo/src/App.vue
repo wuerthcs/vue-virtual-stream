@@ -33,7 +33,7 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(2000),
+      items: this.generateMessages(200),
     }
   },
   methods: {
