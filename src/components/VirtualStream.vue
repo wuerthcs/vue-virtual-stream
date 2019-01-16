@@ -106,9 +106,13 @@
       },
     },
     methods: {
-      updateCurrentPosition(force) {
+      
+      /**
+       * retreives the current scroll positions for the screen start and end edges
+       * @returns {object}
+       */
+      getScrollPosition() {
         const positions = {}
-
         positions.start = (!this.reversed) ?
           this.$refs.wrapper.scrollTop :
           this.totalHeight - (this.$refs.wrapper.scrollTop + this.$refs.wrapper.offsetHeight)
@@ -117,6 +121,18 @@
           this.$refs.wrapper.offsetHeight + this.$refs.wrapper.scrollTop :
           this.totalHeight - this.$refs.wrapper.scrollTop
         
+        return positions
+      },
+
+      /**
+       * calculates and updates the current position dependend on the current scroll position
+       * @param {boolean} force
+       * @returns {void}
+       */
+      updateCurrentPosition(force) {
+        if (!this.ready && !force) return false
+        
+        const positions = this.getScrollPosition()
         if (positions.end === this.totalHeight) this.$emit('scroll', 'end')
 
         if (positions.start === 0) {
@@ -130,42 +146,71 @@
           this.scrollAttachedTo = false
         }
 
-        if (!this.ready && !force) return false
-
         if (this.triggerDimensions && this.triggerDimensions.start) {
           if (this.position > 0 && (positions.start <= this.triggerDimensions.start.end)) {
             this.updatePosition(this.trigger.start.id)
           }
-        }
-
-        if (this.triggerDimensions && this.triggerDimensions.end) {
+        } else if (this.triggerDimensions && this.triggerDimensions.end) {
           if (positions.end >= this.triggerDimensions.end.start) {
             this.updatePosition(this.trigger.end.id)
           }
         }
 
         if (positions.start < this.triggerDimensions.start.start || positions.end > this.triggerDimensions.end.end) {
-          const dimensions = Object.values(this.dimensions)
-
-          const currentPosition = dimensions.filter(dimension => {
-            const dimensionEnd = dimension.top + dimension.height
-            return ((positions.end >= dimension.top && positions.end <= dimensionEnd))
-          })
-
-          if (currentPosition[0]) {
-            this.updatePosition(currentPosition[0].id)
-          }
+          this.updatePositionFromUnknownScrollPosition(positions)
         }
       },
+
+      /**
+       * updates the virtualization position when the scroll position is not in any dimension of the currently rendered items
+       * (when scrolled very fast to a speficic position)
+       * @param {object} positions
+       * @returns {void}
+       */
+      updatePositionFromUnknownScrollPosition(positions) {
+        const dimensions = Object.values(this.dimensions)
+        const currentPosition = dimensions.filter((dimension) => this.filterCurrentPosition(dimension, positions))
+        if (currentPosition[0]) {
+          this.updatePosition(currentPosition[0].id)
+        }
+      },
+
+      /**
+       * filters through all positions
+       * @param {object} dimension
+       * @param {object} positions
+       * @returns {boolean}
+       */
+      filterCurrentPosition(dimension, positions) {
+        const dimensionEnd = dimension.top + dimension.height
+        return ((positions.end >= dimension.top && positions.end <= dimensionEnd))
+      },
+      
+      /**
+       * handles the scroll position when the wrapper is scrolled
+       * @returns {void}
+       */
       handleScroll: throttle(function() {
         this.updateCurrentPosition()
         window.setTimeout(() => {
           this.updateCurrentPosition()
         }, 150)
       }, 100),
+      
+      /**
+       * updates the current virtualization position to a specific id
+       * @param {number} id
+       * @returns {void}
+       */
       updatePosition(id) {
         this.position = this.identifier.ids[id]
       },
+
+      /**
+       * gets the item height of the previous item
+       * @param {object} item
+       * @returns {number}
+       */
       getPreviousItemHeight(item) {
         const id = item.id
 
@@ -181,10 +226,20 @@
 
         return this.getItemHeight(previousId)
       },
+      
+      /**
+       * Gets the height from an item via the dimensions object
+       * @param {number} id
+       * @returns {number}
+       */
       getItemHeight(id) {
         const dimensionItem = this.dimensions[id] || false
         return (dimensionItem) ? dimensionItem.top + dimensionItem.height : 0
       },
+      
+      /**
+       * Updates item dimensions known to the package via mapping through the currently rendered items and recalculating their heights and top positions
+       */
       updateItemDimensions() {
         this.ready = false
         const sortedItems = this.$refs.items.filter((item) => {
@@ -216,6 +271,7 @@
                 const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
                 window.requestAnimationFrame(() => {
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+                  console.log('test')
                   this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
                 })
@@ -228,6 +284,7 @@
               const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
               window.requestAnimationFrame(() => {
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+                console.log('test 2')
                 this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
               })
@@ -266,9 +323,20 @@
           this.receivedNewItems = false
         }, 100)
       },
-      updateItemDimension(d) {
-        Object.assign(this.dimensions[d.id], d.dimensions)
+
+      /**
+       * update the dimension of a specific item
+       * @param {object} item
+       */
+      updateItemDimension(item) {
+        Object.assign(this.dimensions[item.id], item.dimensions)
       },
+
+      /**
+       * update all dimensions with the height of all new items
+       * used when new items are added to the list of virtualized items
+       * @returns {void}
+       */
       updateAllDimensions() {
         const sortedItems = this.$refs.items.filter((item) => {
           return (item.id !== null)
