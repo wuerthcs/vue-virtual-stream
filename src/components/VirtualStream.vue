@@ -271,7 +271,6 @@
                 const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
                 window.requestAnimationFrame(() => {
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-                  console.log('test')
                   this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
                 })
@@ -284,7 +283,6 @@
               const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
               window.requestAnimationFrame(() => {
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-                console.log('test 2')
                 this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
               })
