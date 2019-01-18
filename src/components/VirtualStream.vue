@@ -136,7 +136,7 @@
         const positions = this.getScrollPosition()
         if (positions.end === this.totalHeight) this.$emit('scroll', 'end')
 
-        if (positions.start === 0) {
+        if (positions.start <= 0) {
           this.$emit('scroll', 'start')
           this.scrollAttachedTo = 'start'
         } else if (positions.end === this.totalHeight) {
@@ -146,7 +146,7 @@
           this.$emit('scroll', positions)
           this.scrollAttachedTo = false
         }
-
+        
         if (this.triggerDimensions && this.triggerDimensions.start) {
           if (this.position > 0 && (positions.start <= this.triggerDimensions.start.end)) {
             this.updatePosition(this.trigger.start.id)
@@ -259,11 +259,13 @@
         const oldTotalHeight = this.totalHeight
         this.oldScrollTop = (this.$refs.wrapper) ? this.$refs.wrapper.scrollTop : this.oldScrollTop
 
-        this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
+        const dimensionArray = Object.values(this.dimensions)
+        this.totalHeight = (!dimensionArray.length) ? 0 : dimensionArray.reduce((dimensionA, dimensionB) => {
           const aVal = (typeof dimensionA === 'object') ? dimensionA.height : dimensionA
           const bVal = (typeof dimensionB === 'object') ? dimensionB.height : dimensionB
           return aVal + bVal
         })
+        if (dimensionArray.length === 1) this.totalHeight = dimensionArray[0].height
 
         if (this.receivedNewItems) {
           if (!this.reversed) {
@@ -292,25 +294,27 @@
         }
 
         const startIndex = 0
-        const endIndex = ((sortedItems.length - 1) - (this.count - this.offset) < 0) ?  sortedItems.length - 1 : this.count - this.offset
+        const endIndex = ((sortedItems.length - 1) - (this.count - this.offset) < 0) ?  (sortedItems.length === 1) ? 1 : sortedItems.length - 1 : this.count - this.offset
 
         this.trigger = {
           start: sortedItems[startIndex],
           end: sortedItems[sortedItems.length - endIndex]
         }
 
-        this.triggerDimensions = {
-          full: {
-            start: this.dimensions[this.trigger.start.id],
-            end: this.dimensions[this.trigger.end.id],
-          },
-          start: {
-            start: this.dimensions[this.trigger.start.id].top,
-            end: this.dimensions[this.trigger.start.id].top + this.dimensions[this.trigger.start.id].height
-          },
-          end: {
-            start: this.dimensions[this.trigger.end.id].top,
-            end: this.dimensions[this.trigger.end.id].top + this.dimensions[this.trigger.end.id].height
+        if (dimensionArray.length) {
+          this.triggerDimensions = {
+            full: {
+              start: this.dimensions[this.trigger.start.id],
+              end: this.dimensions[this.trigger.end.id],
+            },
+            start: {
+              start: this.dimensions[this.trigger.start.id].top,
+              end: this.dimensions[this.trigger.start.id].top + this.dimensions[this.trigger.start.id].height
+            },
+            end: {
+              start: this.dimensions[this.trigger.end.id].top,
+              end: this.dimensions[this.trigger.end.id].top + this.dimensions[this.trigger.end.id].height
+            }
           }
         }
 
@@ -351,7 +355,7 @@
           })
         }
 
-        const newItemHeight = (!this.$refs.newItems) ? false : this.$refs.newItems.reduce((a, b) => {
+        const newItemHeight = (!this.$refs.newItems) ? false : (this.$refs.newItems || []).reduce((a, b) => {
           const aVal = (typeof a === 'number') ? a : a.$el.offsetHeight
           const bVal = (typeof b === 'number') ? b : b.$el.offsetHeight
           return aVal + bVal
