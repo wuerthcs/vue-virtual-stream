@@ -70,6 +70,7 @@
       return {
         position: 0,
         oldPosition: 0,
+        oldScrollTop: 0,
         dimensions: {},
         totalHeight: 0,
         ready: false,
@@ -256,7 +257,7 @@
         })
 
         const oldTotalHeight = this.totalHeight
-        const oldScrollTop = this.$refs.wrapper.scrollTop
+        this.oldScrollTop = (this.$refs.wrapper) ? this.$refs.wrapper.scrollTop : this.oldScrollTop
 
         this.totalHeight = Object.values(this.dimensions).reduce((dimensionA, dimensionB) => {
           const aVal = (typeof dimensionA === 'object') ? dimensionA.height : dimensionA
@@ -266,24 +267,24 @@
 
         if (this.receivedNewItems) {
           if (!this.reversed) {
-            if (oldScrollTop !== 0) {
+            if (this.oldScrollTop !== 0) {
               if (oldTotalHeight < this.totalHeight) {
                 const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
                 window.requestAnimationFrame(() => {
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-                  this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+                  this.$refs.wrapper.scrollTop = this.oldScrollTop + heightDiff
                   this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
                 })
               }
             }  
           }
         } else {
-          if (oldScrollTop !== 0) {
+          if (this.oldScrollTop !== 0) {
             if (this.reversed && oldTotalHeight < this.totalHeight) {
               const heightDiff = Math.abs(this.totalHeight - oldTotalHeight)
               window.requestAnimationFrame(() => {
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-                this.$refs.wrapper.scrollTop = oldScrollTop + heightDiff
+                this.$refs.wrapper.scrollTop = this.oldScrollTop + heightDiff
                 this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
               })
             }
