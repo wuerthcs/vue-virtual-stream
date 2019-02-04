@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import ResizeObserver from 'resize-observer-polyfill'
+
 export default {
     data() {
         return {
