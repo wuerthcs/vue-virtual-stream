@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :count="120" :offset="80" ref="stream" attachToStart reversed>
+        <virtual-stream :items="items" :count="120" :offset="80" ref="stream" attachToStart reverseItems reversed>
           <template slot-scope="{ item }">
             <div v-on:click="updateMessage(item)">
               <Message :data="item" />
@@ -62,7 +62,7 @@ export default {
       }
     },
     addMessage() {
-      this.items.unshift(this.generateMessage(this.items.length))
+      this.items.push(this.generateMessage(this.items.length))
     },
     updateMessage(item) {
       const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
@@ -74,14 +74,6 @@ export default {
       this.items[index].attachment = (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null
     },
   },
-  mounted() {
-    this.stream = this.$refs.stream
-    window.setInterval(() => {
-      if (this.addMessages) {
-        this.addMessage()
-      }
-    }, 500)
-  }
 }
 </script>
 

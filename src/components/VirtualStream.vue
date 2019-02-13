@@ -45,6 +45,10 @@
         type: Boolean,
         default: false,
       },
+      reverseItems: {
+        type: Boolean,
+        default: false,
+      },
       count: {
         type: Number,
         default: 40,
@@ -85,6 +89,11 @@
       }
     },
     computed: {
+      renderedItems() {
+        const items = [...this.items]
+        if (this.reverseItems) items.reverse()
+        return items
+      },
       itemCount() {
         return this.items.length
       },
@@ -94,12 +103,12 @@
       currentView() {
         const startPos = (this.position - this.correctedCount < 0) ? 0 : this.position - this.correctedCount
         const endPos = (this.position + this.count > this.items.length) ? this.items.length : this.position + this.count
-        return this.items.slice(startPos, endPos)
+        return this.renderedItems.slice(startPos, endPos)
       },
       identifier() {
         let indexes = []
         let ids = {}
-        this.items.forEach((item, index) => {
+        this.renderedItems.forEach((item, index) => {
           indexes[index] = item.id
           ids[item.id] = index
         })
@@ -381,7 +390,8 @@
       itemCount(newVal, oldVal) {
         if (newVal !== oldVal) {
           const diffCount = Math.abs(newVal - oldVal)
-          this.newItems = this.items.slice(0, diffCount)
+          const index = (!this.reverseItems) ? 0 : this.renderedItems.length - diffCount
+          this.newItems = this.renderedItems.slice(index, diffCount)
           this.receivedNewItems = true
           this.$emit('newitem')
         } else {
