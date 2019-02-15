@@ -12,6 +12,7 @@
       </div>
       <div class="toolbar">
         <div>
+          <input type="text" />
           <button v-on:click="addMessage">Add message</button><br />
         </div>
       </div>

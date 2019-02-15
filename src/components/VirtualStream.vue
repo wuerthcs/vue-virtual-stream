@@ -86,6 +86,10 @@
         newItems: [],
         receivedNewItems: false,
         scrollAttachedTo: false,
+        oldWindowSize: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }
       }
     },
     computed: {
@@ -443,24 +447,33 @@
         }, 100)
 
         window.addEventListener('resize', debounce(() => {
-          this.position = 0
-          this.dimensions = {}
-          this.newItems = []
-          this.oldPosition = 0
-          this.totalHeight = 0
-          this.trigger = {
-            start: false,
-            end: false,
-          }
-          this.triggerDimensions = {
-            start: false,
-            end: false,
+          const windowSize = {
+            width: window.innerWidth,
+            height: window.innerHeight,
           }
 
-          this.updateItemDimensions()
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
-          if (this.$refs.wrapper && this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
-          this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+          if (windowSize.width !== this.oldWindowSize.width) {
+            this.position = 0
+            this.dimensions = {}
+            this.newItems = []
+            this.oldPosition = 0
+            this.totalHeight = 0
+            this.trigger = {
+              start: false,
+              end: false,
+            }
+            this.triggerDimensions = {
+              start: false,
+              end: false,
+            }
+  
+            this.updateItemDimensions()
+            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'
+            if (this.$refs.wrapper && this.reversed) this.$refs.wrapper.scrollTop = this.totalHeight
+            this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'touch'
+          }
+
+          this.oldWindowSize = windowSize
         }, 60))
       })
     }
