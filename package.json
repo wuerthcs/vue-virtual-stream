@@ -18,7 +18,8 @@
     "dev": "rollup --config build/rollup.config.js --format es --file dist/vue-virtual-stream.esm.js -w -m",
     "push-demo": "gh-pages -d ./demo/dist",
     "publish-demo": "cd ./demo && npm run build && cd .. && npm run push-demo",
-    "full-publish": "npm run install-all && npm run build && npm run publish-demo"
+    "full-publish": "npm run install-all && npm run build && npm run publish-demo",
+    "release": "np --yolo"
   },
   "repository": {
     "type": "git",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "gh-pages": "^2.0.1",
     "husky": "^1.2.0",
+    "np": "^4.0.2",
     "rollup": "^0.67.4",
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-commonjs": "^9.2.0",
