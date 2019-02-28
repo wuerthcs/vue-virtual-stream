@@ -25,6 +25,7 @@
 <script>
   import throttle from 'lodash/throttle'
   import debounce from 'lodash/debounce'
+  import diff from 'deep-object-diff/dist/diff'
   import getBrowser from '../utils/getBrowser'
   import Item from './Item.vue'
 
@@ -170,7 +171,11 @@
        */
       updatePositionFromUnknownScrollPosition(positions) {
         const dimensions = Object.values(this.dimensions)
-        const currentPosition = dimensions.filter((dimension) => this.filterCurrentPosition(dimension, positions))
+        let currentPosition = []
+        for (let i = 0; i < dimensions.length; i++) {
+          const dimension = dimensions[i]
+          if (this.filterCurrentPosition(dimension, positions)) currentPosition.push(dimension)
+        }
         if (currentPosition[0]) {
           this.updatePosition(currentPosition[0].id)
         }
@@ -239,7 +244,7 @@
       },
       
       /**
-       * Updates item dimensions known to the package via mapping through the currently rendered items and recalculating their heights and top positions
+       * Updates item dimensions known to the component via mapping through the currently rendered items and recalculating their heights and top positions
        */
       updateItemDimensions() {
         this.ready = false
@@ -373,26 +378,53 @@
         if (this.reverseItems) output.reverse()
         return items
       },
+      getUpdatedRenderedItems(itemDiff) {
+        let items = [...this.renderedItems]
+        const indexes = Object.keys(itemDiff)
+        for (let i = 0; i < indexes.length; i++) {
+          const index = items.length - 1 - indexes[i]
+          const item = Object.assign({}, items[index], itemDiff[indexes[i]])
+          items[index] = item
+        }
+        return items
+      },
       getCurrentView(position, items) {
         const startPos = (position - this.correctedCount < 0) ? 0 : position - this.correctedCount
         const endPos = (position + this.count > items.length) ? items.length : position + this.count
         return this.renderedItems.slice(startPos, endPos)
       },
-      getIdentifiers() {
+      getIdentifiers(items) {
         let indexes = []
         let ids = {}
 
-        for(let i = 0; i < this.renderedItems.length; i++) {
-          indexes[i] = this.renderedItems[i].id
-          ids[this.renderedItems[i].id] = i
+        for(let i = 0; i < items.length; i++) {
+          indexes[i] = items[i].id
+          ids[items[i].id] = i
         }
         return { indexes, ids }
+      },
+      getUpdatedIdentifiers(itemDiff) {
+        const indexes = Object.keys(itemDiff)
+        const currentIdentifiers = this.identifier
+
+        for (let i = 0; i < indexes.length; i++) {
+          const index = indexes[i]
+          const id = (itemDiff[index].id) ? itemDiff[index].id : this.renderedItems[index].id
+          
+          currentIdentifiers.indexes[index] = id
+          currentIdentifiers.ids[id] = index
+        }
+
+        return currentIdentifiers
       },
     },
     watch: {
       items(newItems, oldItems) {
-        this.renderedItems = this.getRenderedItems(newItems)
-        this.currentView = this.getCurrentView(this.position, newItems)
+        const itemDiff = diff(oldItems, newItems)
+        if (Object.keys(itemDiff).length > 0) {
+          this.renderedItems = this.getUpdatedRenderedItems(itemDiff)
+          this.currentView = this.getCurrentView(this.position, newItems)
+        }
       },
       position(newPosition, oldPosition) {
         if (oldPosition !== newPosition) {
@@ -400,7 +432,10 @@
         }
       },
       renderedItems(newRenderedItems, oldRenderedItems) {
-        this.identifier = this.getIdentifiers(newRenderedItems)
+        const itemDiff = diff(oldRenderedItems, newRenderedItems)
+        if (Object.keys(itemDiff).length > 0) {
+          this.identifier = this.getUpdatedIdentifiers(itemDiff)
+        }
       },
       currentView(n) {
         this.$nextTick(() => {
