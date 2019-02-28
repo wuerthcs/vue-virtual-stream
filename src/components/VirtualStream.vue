@@ -72,6 +72,11 @@
     },
     data() {
       return {
+        currentView: [],
+        identifier: {
+          ids: {},
+          indexes: [],
+        },
         position: 0,
         oldPosition: 0,
         oldScrollTop: 0,
@@ -89,34 +94,16 @@
         oldWindowSize: {
           width: window.innerWidth,
           height: window.innerHeight,
-        }
+        },
+        renderedItems: [],
       }
     },
     computed: {
-      renderedItems() {
-        const items = [...this.items]
-        if (this.reverseItems) items.reverse()
-        return items
-      },
       itemCount() {
         return this.items.length
       },
       correctedCount() {
         return Math.round(this.count / 2)
-      },
-      currentView() {
-        const startPos = (this.position - this.correctedCount < 0) ? 0 : this.position - this.correctedCount
-        const endPos = (this.position + this.count > this.items.length) ? this.items.length : this.position + this.count
-        return this.renderedItems.slice(startPos, endPos)
-      },
-      identifier() {
-        let indexes = []
-        let ids = {}
-        this.renderedItems.forEach((item, index) => {
-          indexes[index] = item.id
-          ids[item.id] = index
-        })
-        return { indexes, ids }
       },
     },
     methods: {
@@ -380,9 +367,41 @@
           const dimension = this.dimensions[key]
           Object.assign(this.dimensions[key], { top: dimension.top + newItemHeight })
         })
-      }
+      },
+      getRenderedItems(items) {
+        const output = [...items]
+        if (this.reverseItems) output.reverse()
+        return items
+      },
+      getCurrentView(position, items) {
+        const startPos = (position - this.correctedCount < 0) ? 0 : position - this.correctedCount
+        const endPos = (position + this.count > items.length) ? items.length : position + this.count
+        return this.renderedItems.slice(startPos, endPos)
+      },
+      getIdentifiers() {
+        let indexes = []
+        let ids = {}
+
+        for(let i = 0; i < this.renderedItems.length; i++) {
+          indexes[i] = this.renderedItems[i].id
+          ids[this.renderedItems[i].id] = i
+        }
+        return { indexes, ids }
+      },
     },
     watch: {
+      items(newItems, oldItems) {
+        this.renderedItems = this.getRenderedItems(newItems)
+        this.currentView = this.getCurrentView(this.position, newItems)
+      },
+      position(newPosition, oldPosition) {
+        if (oldPosition !== newPosition) {
+          this.currentView = this.getCurrentView(newPosition, this.items)
+        }
+      },
+      renderedItems(newRenderedItems, oldRenderedItems) {
+        this.identifier = this.getIdentifiers(newRenderedItems)
+      },
       currentView(n) {
         this.$nextTick(() => {
           this.updateItemDimensions()
@@ -434,6 +453,9 @@
       })
     },
     mounted() {
+      this.renderedItems = this.getRenderedItems(this.items)
+      this.currentView = this.getCurrentView(0, this.items)
+      this.identifier = this.getIdentifiers(this.renderedItems)
       this.$nextTick(() => {
         this.updateItemDimensions()
         this.$refs.wrapper.style['-webkit-overflow-scrolling'] = 'auto'

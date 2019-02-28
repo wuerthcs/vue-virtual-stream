@@ -63,7 +63,7 @@ export default {
       }
     },
     addMessage() {
-      this.items.push(this.generateMessage(this.items.length))
+      this.items.unshift(this.generateMessage(this.items.length))
     },
     updateMessage(item) {
       const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
