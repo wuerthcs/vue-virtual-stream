@@ -96,10 +96,14 @@
           width: window.innerWidth,
           height: window.innerHeight,
         },
-        renderedItems: [],
       }
     },
     computed: {
+      renderedItems() {
+        const output = [...this.items]
+        if (this.reverseItems) output.reverse()
+        return output
+      },
       itemCount() {
         return this.items.length
       },
@@ -373,21 +377,6 @@
           Object.assign(this.dimensions[key], { top: dimension.top + newItemHeight })
         })
       },
-      getRenderedItems(items) {
-        const output = [...items]
-        if (this.reverseItems) output.reverse()
-        return items
-      },
-      getUpdatedRenderedItems(itemDiff) {
-        let items = [...this.renderedItems]
-        const indexes = Object.keys(itemDiff)
-        for (let i = 0; i < indexes.length; i++) {
-          const index = items.length - 1 - indexes[i]
-          const item = Object.assign({}, items[index], itemDiff[indexes[i]])
-          items[index] = item
-        }
-        return items
-      },
       getCurrentView(position, items) {
         const startPos = (position - this.correctedCount < 0) ? 0 : position - this.correctedCount
         const endPos = (position + this.count > items.length) ? items.length : position + this.count
@@ -422,7 +411,6 @@
       items(newItems, oldItems) {
         const itemDiff = diff(oldItems, newItems)
         if (Object.keys(itemDiff).length > 0) {
-          this.renderedItems = this.getUpdatedRenderedItems(itemDiff)
           this.currentView = this.getCurrentView(this.position, newItems)
         }
       },
@@ -488,7 +476,6 @@
       })
     },
     mounted() {
-      this.renderedItems = this.getRenderedItems(this.items)
       this.currentView = this.getCurrentView(0, this.items)
       this.identifier = this.getIdentifiers(this.renderedItems)
       this.$nextTick(() => {
