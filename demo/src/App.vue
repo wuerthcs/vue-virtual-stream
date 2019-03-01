@@ -34,14 +34,14 @@ export default {
   },
   data() {
     return {
-      items: this.generateMessages(12000),
+      items: this.generateMessages(300),
     }
   },
   methods: {
     generateMessages(num) {
       const messages = []
       for (let i = 0; i < num; i++) {
-        messages.push(this.generateMessage(i))
+        messages.unshift(this.generateMessage(i))
       }
       return messages
     },
@@ -63,16 +63,20 @@ export default {
       }
     },
     addMessage() {
-      this.items.push(this.generateMessage(this.items.length))
+      const newItems = [...this.items]
+      newItems.push(this.generateMessage(this.items.length))
+      this.items = newItems
     },
     updateMessage(item) {
+      const newItems = [...this.items]
       const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
-      const index = item.index
-      this.items[index].message = LoremIpsum({
-        sentenceLowerBound: 5,
-        sentenceUpperBound: 200,
-      })
-      this.items[index].attachment = (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null
+      newItems[item.index] = Object.assign({}, newItems[item.index], {
+        message: LoremIpsum({
+          sentenceLowerBound: 5,
+          sentenceUpperBound: 200,
+        }),
+        attachment: (hasAttachment) ? faker.fake(`{{image.imageUrl}}`) : null})
+      this.items = newItems.concat([])
     },
   },
 }
@@ -84,6 +88,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  user-select: none;
 }
 
 #app {
