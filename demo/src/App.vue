@@ -2,9 +2,9 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="items" :count="120" :offset="80" ref="stream" attachToStart reverseItems reversed>
-          <template slot-scope="{ item }">
-            <div v-on:click="updateMessage(item)">
+        <virtual-stream :items="reversedItems" :count="120" :offset="80" ref="stream" attachToStart reversed>
+          <template slot-scope="{ item, index }">
+            <div v-on:click="updateMessage(item, index)">
               <Message :data="item" />
             </div>
           </template>
@@ -37,11 +37,17 @@ export default {
       items: this.generateMessages(300),
     }
   },
+  computed: {
+    reversedItems() {
+      const items = [...this.items]
+      return items.reverse()
+    },
+  },
   methods: {
     generateMessages(num) {
       const messages = []
       for (let i = 0; i < num; i++) {
-        messages.unshift(this.generateMessage(i))
+        messages.push(this.generateMessage(i))
       }
       return messages
     },
@@ -67,8 +73,9 @@ export default {
       newItems.push(this.generateMessage(this.items.length))
       this.items = newItems
     },
-    updateMessage(item) {
+    updateMessage(item, index) {
       const newItems = [...this.items]
+      console.log(item.index, index)
       const hasAttachment = (Math.floor((Math.random() * 20)) > 16)
       newItems[item.index] = Object.assign({}, newItems[item.index], {
         message: LoremIpsum({
