@@ -2,7 +2,7 @@
   <div class="app" id="app">
     <div class="container">
       <div class="container-inner">
-        <virtual-stream :items="reversedItems" :count="120" :offset="80" ref="stream" attachToStart reversed>
+        <virtual-stream :items="reversedItems" :count="120" :offset="80" ref="stream" attachToStart reversed reverseItems>
           <template slot-scope="{ item, index }">
             <div v-on:click="updateMessage(item, index)">
               <Message :data="item" />
@@ -40,7 +40,7 @@ export default {
   computed: {
     reversedItems() {
       const items = [...this.items]
-      return items.reverse()
+      return items
     },
   },
   methods: {

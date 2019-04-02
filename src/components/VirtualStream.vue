@@ -386,9 +386,16 @@
         let indexes = []
         let ids = {}
 
-        for(let i = 0; i < items.length; i++) {
-          indexes[i] = items[i].id
-          ids[items[i].id] = i
+        if (!this.reverseItems) {
+          for(let i = 0; i < items.length; i++) {
+            indexes[i] = items[i].id
+            ids[items[i].id] = i
+          }
+        } else {
+          for(let i = items.length - 1; i >= 0; i--) {
+            indexes[i] = items[i].id
+            ids[items[i].id] = i
+          }
         }
         return { indexes, ids }
       },
